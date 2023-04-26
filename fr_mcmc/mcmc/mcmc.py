@@ -1,7 +1,7 @@
 '''
 Run MCMC analyses and calculations of the physical parameters of the models.
 
-Parameter order in this file: Mabs,omega_m,b,H_0,n
+Parameter order in this file: Mabs,L_bar,b,H_0,n
 '''
 
 import numpy as np; #np.random.seed(42)
@@ -37,8 +37,8 @@ def run():
     
     bnds = config.BOUNDS
     [M_min, M_max] = config.M_PRIOR
-    [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
     if model != 'LCDM':
+        [L_bar_min, L_bar_max] = config.L_BAR_PRIOR
         [b_min, b_max] = config.B_PRIOR
     [H0_min, H0_max] = config.H0_PRIOR
 
@@ -110,37 +110,37 @@ def run():
     # Define the prior distribution
     def log_prior(theta):
         if index == 4:
-            M, omega_m, b, H0 = theta
-            if (M_min < M < M_max and omega_m_min < omega_m < omega_m_max and b_min < b < b_max and H0_min < H0 < H0_max):
+            M, L_bar, b, H0 = theta
+            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
                 return 0.0
         elif index == 31:
-            omega_m, b, H0 = theta
-            if (omega_m_min < omega_m < omega_m_max and b_min < b < b_max and H0_min < H0 < H0_max):
+            L_bar, b, H0 = theta
+            if (L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
                 return 0.0
         elif index == 32:
-            M, omega_m, H0 = theta
-            if (M_min < M < M_max and omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
+            M, L_bar, H0 = theta
+            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and H0_min < H0 < H0_max):
                 return 0.0
         elif index == 33:
-            M, omega_m, b = theta
-            if (M_min < M < M_max and omega_m_min < omega_m < omega_m_max and b_min < b < b_max):
+            M, L_bar, b = theta
+            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
                 return 0.0
         elif index == 21:
-            omega_m, b = theta
-            if (omega_m_min < omega_m < omega_m_max and b_min < b < b_max):
+            L_bar, b = theta
+            if (L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
                 return 0.0
         elif index == 22:
-            omega_m, H0 = theta
-            if (omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
+            L_bar, H0 = theta
+            if (L_bar_min < L_bar < L_bar_max and H0_min < H0 < H0_max):
                 return 0.0
         elif index == 23:
-            M, omega_m = theta
-            if (M_min < M < M_max and omega_m_min < omega_m < omega_m_max):
+            M, L_bar = theta
+            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max):
                 return 0.0
 
         elif index == 1:
-            omega_m = theta
-            if omega_m_min < omega_m < omega_m_max:
+            L_bar = theta
+            if L_bar_min < L_bar < L_bar_max:
                 return 0.0
         return -np.inf
     
@@ -192,38 +192,38 @@ def run():
                 save_path = output_directory)
 
     # If it corresponds, derive physical parameters
-    if model != 'LCDM':
-        os.chdir(output_directory)
- 
-        textfile_witness = open(witness_file,'a')
-        textfile_witness.write('\n Initializing derivation of parameters..')
-        textfile_witness.close()
+    #if model != 'LCDM':
+    #    os.chdir(output_directory)
+    #
+    #    textfile_witness = open(witness_file,'a')
+    #    textfile_witness.write('\n Initializing derivation of parameters..')
+    #    textfile_witness.close()
 
-        reader = emcee.backends.HDFBackend(filename_h5)
-        nwalkers, ndim = reader.shape #Number of walkers and parameters
+    #    reader = emcee.backends.HDFBackend(filename_h5)
+    #    nwalkers, ndim = reader.shape #Number of walkers and parameters
 
-        # Hardcode definition of burnin and thin
-        samples = reader.get_chain()
-        burnin= int(0.2*len(samples[:,0])) # Burnin 20% 
-        thin = 1
+    #    # Hardcode definition of burnin and thin
+    #    samples = reader.get_chain()
+    #    burnin= int(0.2*len(samples[:,0])) # Burnin 20% 
+    #    thin = 1
 
-        samples = reader.get_chain(discard=burnin, flat=True, thin=thin)
+    #    samples = reader.get_chain(discard=burnin, flat=True, thin=thin)
 
-        textfile_witness = open(witness_file,'a')
-        textfile_witness.write('\n Number of effective steps: {}'.format(len(samples))) 
-        textfile_witness.write(('\n Estimated time: {} min'.format(len(samples)/60)))
-        textfile_witness.close()
+    #    textfile_witness = open(witness_file,'a')
+    #    textfile_witness.write('\n Number of effective steps: {}'.format(len(samples))) 
+    #    textfile_witness.write(('\n Estimated time: {} min'.format(len(samples)/60)))
+    #    textfile_witness.close()
 
-        new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
-        np.savez(filename+'_deriv', new_samples=new_samples)
+    #    new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
+    #    np.savez(filename+'_deriv', new_samples=new_samples)
 
-        textfile_witness = open(witness_file,'a')
-        textfile_witness.write('\n Done!')
-        textfile_witness.close()
+    #    textfile_witness = open(witness_file,'a')
+    #    textfile_witness.write('\n Done!')
+    #    textfile_witness.close()
 
         # Print the output
-        with np.load(filename+'_deriv.npz') as data:
-            ns = data['new_samples']
+    #    with np.load(filename+'_deriv.npz') as data:
+    #        ns = data['new_samples']
         
 
     # Plot the results

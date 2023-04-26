@@ -3,21 +3,20 @@ Change of parameters used in the numeric integrarion
 '''
 
 from scipy.constants import c as c_luz # meters/seconds
+import numpy as np
 c_luz_km = c_luz/1000
 
 # Parameters order: omega_m, b, H_0, n
+def F_H(H, params):     
+    lamb, L, beta, L_bar = params
+    #FH = H**2 #Caso LCDM
+    FH = H**2 + H**8 * (lamb * L**6 * np.exp(lamb*(L*H)**4) - beta * L_bar**6 * np.exp(-beta*(L_bar*H)**2)) 
+    return FH
 
-def physical_to_model_params_HS(omega_m, b):
-    '''
-    Convert physical parameters (omega_m, b)
-    into Hu-Sawicki model parameters c1 y c2. This transformation doesn't depend on H0!
-    '''
-
-    aux = c_luz_km**2 * omega_m / (7800 * (8315)**2 * (1-omega_m)) #B en la tesis
-    c_1 =  2/b
-    c_2 = 2*aux/b
-
-    return c_1, c_2
+def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa=0.999916):
+    factor = F_H(H0, [0, 1e-27/H0, beta, L_bar]) / H0**2
+    omega_cdm = omega_m_luisa * factor
+    return omega_cdm
 
 #%%
 if __name__ == '__main__':

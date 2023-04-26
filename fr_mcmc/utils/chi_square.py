@@ -14,6 +14,7 @@ import git
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
+from change_of_parameters import omega_luisa_to_CDM
 from solve_sys import Hubble_th
 from supernovae import magn_aparente_teorica, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
@@ -44,39 +45,39 @@ def all_parameters(theta, params_fijos, index):
     '''
 
     if index == 4:
-        [Mabs, omega_m, b, H_0] = theta
+        [Mabs, L_bar, b, H_0] = theta
         _ = params_fijos
 
     elif index == 31:
-        [omega_m, b, H_0] = theta
+        [L_bar, b, H_0] = theta
         Mabs = params_fijos
 
     elif index == 32:
-        [Mabs, omega_m, H_0] = theta
+        [Mabs, L_bar, H_0] = theta
         b = params_fijos
 
     elif index == 33:
-        [Mabs, omega_m, b] = theta
+        [Mabs, L_bar, b] = theta
         H_0 = params_fijos
 
     elif index == 21:
-        [omega_m, b] = theta
+        [L_bar, b] = theta
         [Mabs, H_0] = params_fijos
 
     elif index == 22:
-        [omega_m, H_0] = theta
+        [L_bar, H_0] = theta
         [Mabs, b] = params_fijos
 
     elif index == 23:
-        [Mabs, omega_m] = theta
+        [Mabs, L_bar] = theta
         [b, H_0] = params_fijos
 
     elif index == 1:
-        omega_m = theta
+        L_bar = theta
         [Mabs, b, H_0] = params_fijos
 
 
-    return [Mabs, omega_m, b, H_0]
+    return [Mabs, L_bar, b, H_0]
 
 
 def params_to_chi2(theta, params_fijos, index=0,
@@ -112,9 +113,10 @@ def params_to_chi2(theta, params_fijos, index=0,
     chi2_AGN = 0
     chi2_H0 =  0
 
-    [Mabs, omega_m, b, H_0] = all_parameters(theta, params_fijos, index)
+    [Mabs, L_bar, b, H_0] = all_parameters(theta, params_fijos, index)
+    omega_m = omega_luisa_to_CDM(b,L_bar,H_0)
 
-    physical_params = [omega_m,b,H_0]
+    physical_params = [L_bar,b,H_0]
     zs_modelo, Hs_modelo = Hubble_th(physical_params, n=n, model=model,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
@@ -233,10 +235,10 @@ if __name__ == '__main__':
 
 
     #%%
-    a = params_to_chi2([-19.37, 0.3, 70], 0.01, index=32,
-                    #dataset_SN = ds_SN,
-                    #dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+    a = params_to_chi2([-19.37, 0.9, 70], 1.0, index=32,
+                    dataset_SN = ds_SN,
+                    dataset_CC = ds_CC,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     H0_Riess = True,
                     model = 'HS'
@@ -249,43 +251,11 @@ if __name__ == '__main__':
     df = N - P
     x = np.linspace(0,2000, 10**5)
     y = chi2.pdf(x, df, loc=0, scale=1)
-    plt.vlines(a,0,np.max(y),'r')
-    plt.plot(x,y)
+    #plt.vlines(a,0,np.max(y),'r')
+    #plt.plot(x,y)
 
     #%%
-    bs = np.linspace(0,2,22)
-    chies_HS = np.zeros(len(bs))
-    chies_EXP = np.zeros(len(bs))
-    for (i,b) in enumerate(bs):
-        chies_EXP[i] = params_to_chi2([0.325,b,68], -19.35, index=31,
-                        #dataset_SN = ds_SN,
-                        dataset_CC = ds_CC,
-                        #dataset_BAO = ds_BAO,
-                        #dataset_AGN = ds_AGN,
-                        H0_Riess = True,
-                        model = 'EXP'
-                        )
-        chies_HS[i] = params_to_chi2([0.325,b,68], -19.35, index=31,
-                        #dataset_SN = ds_SN,
-                        dataset_CC = ds_CC,
-                        #dataset_BAO = ds_BAO,
-                        #dataset_AGN = ds_AGN,
-                        H0_Riess = True,
-                        model = 'HS'
-                        )
-        print(i)
-
-        plt.figure()
-        plt.title('CC+H0')
-        plt.ylabel(r'$\chi^2$')
-        plt.xlabel('b')
-        plt.grid(True)
-        plt.plot(bs,chies_HS,label = 'Hu-Sawicki model')
-        plt.plot(bs,chies_EXP,label = 'Exponencial model')
-        plt.legend()
-
-    #%%
-    bs = np.linspace(0.1,4,100)
+    bs = np.linspace(3,7,100)
     chis_1 = np.zeros(len(bs))
     chis_2 = np.zeros(len(bs))
     chis_3 = np.zeros(len(bs))
@@ -294,58 +264,58 @@ if __name__ == '__main__':
     chis_6 = np.zeros(len(bs))
     for (i,b) in enumerate(bs):
         #print(i,b)
-        chis_1[i] = params_to_chi2([-19.41, 0.352, b, 62], 0, index=4,
+        chis_1[i] = params_to_chi2([-19.41, 0.9/62, b, 62], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
-        chis_2[i] = params_to_chi2([-19.41, 0.352, b, 63], 0, index=4,
+        chis_2[i] = params_to_chi2([-19.41, 0.9/63, b, 63], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
 
-        chis_3[i] = params_to_chi2([-19.41, 0.352, b, 64], 0, index=4,
+        chis_3[i] = params_to_chi2([-19.41, 0.9/64, b, 64], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
-        chis_4[i] = params_to_chi2([-19.41, 0.352, b, 65], 0, index=4,
+        chis_4[i] = params_to_chi2([-19.41, 0.9/65, b, 65], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
-        chis_5[i] = params_to_chi2([-19.41, 0.352, b, 66], 0, index=4,
+        chis_5[i] = params_to_chi2([-19.41, 0.9/66, b, 66], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
-        chis_6[i] = params_to_chi2([-19.41, 0.352, b, 67], 0, index=4,
+        chis_6[i] = params_to_chi2([-19.41, 0.9/70, b, 67], 0, index=4,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
+                    #dataset_BAO = ds_BAO,
                     #dataset_AGN = ds_AGN,
                     #H0_Riess = True,
                     model = 'EXP'
                     )
     #1077.8293845284927/(1048+20+len(ds_CC[0])-4)
     #%%
-    plt.title('EXP: CC+SN+BAO, omega_m=0.352, M=-19.41')
+    plt.title('CC+SN, L_bar=0.9, M=-19.41')
     plt.grid(True)
     plt.plot(bs,chis_1,label='H0=62')
     plt.plot(bs,chis_2,label='H0=63')
@@ -354,5 +324,7 @@ if __name__ == '__main__':
     plt.plot(bs,chis_5,label='H0=66')
     plt.plot(bs,chis_6,label='H0=67')
     plt.ylabel(r'$\chi^2$')
-    plt.xlabel('b')
+    plt.xlabel(r'$\beta$')
     plt.legend()
+    #plt.savefig('cc+sn.png')
+    plt.show()

@@ -17,8 +17,7 @@ from scipy.constants import c as c_light  # units of m/s
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-from change_of_parameters import physical_to_model_params_HS
-from initial_conditions import calculate_initial_conditions, redshift_initial_condition
+from change_of_parameters import F_H, omega_luisa_to_CDM
 
 c_light_km = c_light / 1000 # units of km/s
 path_git = git.Repo(".", search_parent_directories=True).working_tree_dir
@@ -29,12 +28,6 @@ from LambdaCDM import H_LCDM
 from taylor import Taylor_HS
 #%%
 
-def F_H(H, params):     
-    lamb, L, beta, L_bar = params
-    #FH = H**2 #Caso LCDM
-    FH = H**2 + H**8 * (lamb * L**6 * np.exp(lamb*(L*H)**4) - beta * L_bar**6 * np.exp(-beta*(L_bar*H)**2)) 
-    return FH
-
 def F_H_prime(H, params):
     lamb, L, beta, L_bar = params
     #FH_prime = 2 * H #Caso LCDM
@@ -43,7 +36,7 @@ def F_H_prime(H, params):
     return FH_prime
 
 
-def get_odes(z, Hubble, params_ode,lcdm=False):
+def get_odes(z, Hubble, params_ode, lcdm=False):
     '''
     Returns the system of ODEs for the given cosmological model.
 
@@ -72,7 +65,9 @@ def get_odes(z, Hubble, params_ode,lcdm=False):
     omega_m_0 = 0.999916
     omega_r_0 = 1 - omega_m_0
 
-    F_H0 = F_H(H_0, params_ode)
+    [lamb, L, b, L_bar, H_0] = params_ode
+
+    F_H0 = F_H(H_0, [lamb, L, b, L_bar])
 
     if lcdm == True:
         rho_crit_0 = H_0**2 / kappa        
@@ -87,87 +82,32 @@ def get_odes(z, Hubble, params_ode,lcdm=False):
     p_tot =  (1/3) * rho_r
 
     # To integrate in z
-    s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, params_ode))     
+    s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar]))     
     #print(s)
     return s
 
 
-def integrator(physical_params, epsilon=10**(-10), num_z_points=int(10**5),
-                initial_z=10, final_z=0,
+def integrator(physical_params, num_z_points=int(10**5),
+                initial_z=0, final_z=3,
                 system_equations=get_odes, verbose=False,
-                model='HS',method='RK45', rtol=1e-11, atol=1e-16):
-    '''
-    Numerical integration of the system of differential equations between
-    initial_z and final_z, given the initial conditions of the variables
-    and the 'physically meaningful' parameters of the f(R) model.
-
-    Parameters: 
-    -----------
-    physical_params: list
-        A list containing the 'physically meaningful' parameters of the f(R) model,
-        the list must have three elements, the first is the density parameter of matter,
-        the second is the parameter 'b' of the f(R) model, and the third is the Hubble
-        constant in units of km/s/Mpc.
-
-    initial_z: float
-        The initial redshift value.
-
-    final_z: float
-        The final redshift value.
-
-    system_equations: function
-        A function that returns the system of differential equations.
-
-    model: str, default='HS'
-        The f(R) model to use, this parameter should be one of the following:
-        'HS', 'EXP'.
-
-    epsilon: float, default=10**(-10)
-        A small float number used to find the initial condition in the EXP model.
-
-    num_z_points: int, default=int(10**5)
-        The number of points (in redshift) in which the numerical integration
-        is evaluated.
-
-    verbose: bool, default=False
-        If True, prints the time of integration.
-
-    method: str, default='RK45'
-        Integration method, the method must be compatible with the method
-        argument of scipy.integrate.solve_ivp.
-
-    rtol: float, default=1e-11
-        Relative tolerance, the tolerance must be compatible with the rtol
-        argument of scipy.integrate.solve_ivp.
-
-    atol: float, default=1e-16
-        Absolute tolerance, the tolerance must be compatible with the atol
-        argument of scipy.integrate.solve_ivp.
-
-    Returns: 
-    --------
-    tuple
-        An array of Numpy of redshifts z and an array of H(z).
-    '''
-
-
+                method='RK45', rtol=1e-11, atol=1e-16):
+ 
     t1 = time.time()
-    omega_m, b, H0 = physical_params
-
-    h = H0/100
-
+    
+    L_bar, b, H0 = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-
+    ode_params = [0, 1e-27/H0, b, L_bar,H0]
     sol = solve_ivp(system_equations, (initial_z,final_z),
-        H0, t_eval=zs_int, args=(physical_params, model),
-        rtol=rtol, atol=atol, method=method)
+                    [H0], t_eval=zs_int, args = [ode_params],
+                    rtol=rtol, atol=atol, method=method)
+        
 
-    assert len(sol.t)==num_z_points, 'Something is wrong with the integration!'
-    assert np.all(zs_int==sol.t), 'Not all the values of z coincide with the ones that were required!'
+    #assert len(sol.t)==num_z_points, 'Something is wrong with the integration!'
+    #assert np.all(zs_int==sol.t), 'Not all the values of z coincide with the ones that were required!'
 
     # Calculate the Hubble parameter
-    zs_final = sol.t[::-1]
-    Hs_final = sol.y[::-1]
+    zs_final = sol.t
+    Hs_final = sol.y[0]
 
     t2 = time.time()
 
@@ -203,16 +143,16 @@ def Hubble_th(physical_params, *args,
         A tuple of two NumPy arrays containing the redshifts and the corresponding Hubble parameters.
     '''
     
-    omega_m, b, H0 = physical_params
+    L_bar, b, H0 = physical_params
 
-    zs, Hs = integrator([omega_m, b, H0], *args, initial_z=z_max, final_z=z_min, **kwargs)    
+    zs, Hs = integrator([L_bar, b, H0])  
     return zs, Hs   
 
 #%%   
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
 
-    def plot_hubble_diagram(model_name, physical_params,hubble_th=True):
+    def plot_hubble_diagram(physical_params,hubble_th=True):
         """
         Plots the Hubble diagram for a given cosmological model and physical parameters.
 
@@ -227,23 +167,29 @@ if __name__ == '__main__':
         """
 
         # Integrate (or evaluate) Hubble function        
-        redshifts, hubble_values = Hubble_th(physical_params, model=model_name) if hubble_th else \
-                                   integrator(physical_params, model=model_name)
+        #redshifts, hubble_values = Hubble_th(physical_params) if hubble_th else \
+        #                           integrator(physical_params)
+        redshifts, hubble_values = integrator(physical_params)
         # Plot Hubble function
-        plt.plot(redshifts, hubble_values, '.', label=model_name)
+        plt.plot(redshifts, hubble_values, '.')
 
 
     # Set physical parameters
-    omega_m = 0.3
-    b = 0.1
     H_0 = 73
-    physical_params_hs = np.array([omega_m, b, H_0])
-    physical_params_exp = np.array([omega_m, 10, H_0])
+    L_bar = 0.9/H_0
+    b = 5
+    physical_params_hs = np.array([L_bar, b, H_0])
+    physical_params_exp = np.array([L_bar, 10, H_0])
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0)
 
+    physical_params = [L_bar, b, H_0]
+
+    integrator(physical_params)
     # Plot Hubble diagrams for different models
     plt.figure()
-    for model_name, physical_params in [('HS', physical_params_hs), ('EXP', physical_params_exp)]:
-        plot_hubble_diagram(model_name, physical_params)
+    
+    #for model_name, physical_params in [('HS', physical_params_hs), ('EXP', physical_params_exp)]:
+    plot_hubble_diagram(physical_params,hubble_th=False)
     
     #Plot LCDM Hubble parameter
     redshift_LCDM = np.linspace(0,10,int(10**5))

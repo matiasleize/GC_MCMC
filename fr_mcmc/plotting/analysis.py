@@ -22,21 +22,21 @@ os.chdir(path_git + '/fr_mcmc/plotting/')
 
 def parameters_labels(index):
     if index == 4:
-        return ['$M_{abs}$', '$\Omega_{m}$', 'b', '$H_{0}$']
+        return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$']
     elif index == 31:
-        return ['$\Omega_{m}$', 'b', '$H_{0}$']
+        return ['$\L$', r'$\beta$', '$H_{0}$']
     elif index == 32:
-        return ['$M_{abs}$', '$\Omega_{m}$', '$H_{0}$']
+        return ['$M_{abs}$', '$\L$', '$H_{0}$']
     elif index == 33:
-        return ['$M_{abs}$', '$\Omega_{m}$', 'b']
+        return ['$M_{abs}$', '$\L$', r'$\beta$']
     elif index == 21:
-        return ['$\Omega_{m}$', 'b']
+        return ['$\L$', r'$\beta$']
     elif index == 22:
-        return ['$\Omega_{m}$', '$H_{0}$']
+        return ['$\L$', '$H_{0}$']
     elif index == 23:
-        return ['$M_{abs}$', '$\Omega_{m}$']
+        return ['$M_{abs}$', '$\L$']
     elif index == 1:
-        return ['$\Omega_{m}$'] #list or str?
+        return ['$\L$'] #list or str?
 
 def run(filename):
     model = config.MODEL
@@ -45,18 +45,18 @@ def run(filename):
     os.chdir(output_path)
 
     parameters_label = parameters_labels(config.LOG_LIKELIHOOD_INDEX)
-    if model == 'LCDM':
-        reader = emcee.backends.HDFBackend(filename + '.h5')
-        samples = reader.get_chain()
-        burnin= burnin=int(0.2*len(samples[:,0])); thin=1
-        analisis = Plotter(reader, parameters_label, 'Titulo')
+    #if model == 'LCDM':
+    reader = emcee.backends.HDFBackend(filename + '.h5')
+    samples = reader.get_chain()
+    burnin= burnin=int(0.2*len(samples[:,0])); thin=1
+    analisis = Plotter(reader, parameters_label, 'Titulo')
 
-    else:    
-        with np.load(filename + '_deriv.npz') as data:
-            ns = data['new_samples']
-        analisis = Plotter(ns, parameters_label, '')
-        burnin = 0 # already has the burnin
-        thin = 1
+    #else:    
+    #    with np.load(filename + '_deriv.npz') as data:
+    #        ns = data['new_samples']
+    #    analisis = Plotter(ns, parameters_label, '')
+    #    burnin = 0 # already has the burnin
+    #    thin = 1
 
     results_dir = '/results'
     if not os.path.exists(output_path + results_dir):
@@ -66,10 +66,10 @@ def run(filename):
     plt.savefig(output_path + results_dir + '/cornerplot.png')
     plt.close()
 
-    if model == 'LCDM':
-        analisis.graficar_cadenas()
-    else:
-        analisis.graficar_cadenas_derivs()
+    #if model == 'LCDM':
+    analisis.graficar_cadenas()
+    #else:
+    #    analisis.graficar_cadenas_derivs()
     plt.savefig(output_path + results_dir + '/chains.png')
     plt.close()
     analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
