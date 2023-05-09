@@ -14,7 +14,7 @@ def F_H(H, params):
     return FH
 
 def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa=0.999916):
-    factor = F_H(H0, [0, 1e-27/H0, beta, L_bar]) / H0**2
+    factor = F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) / H0**2
     omega_cdm = omega_m_luisa * factor
     return omega_cdm
 

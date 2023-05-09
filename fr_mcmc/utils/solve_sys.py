@@ -96,7 +96,7 @@ def integrator(physical_params, num_z_points=int(10**5),
     
     L_bar, b, H0 = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar,H0]
+    ode_params = [0, 1e-27/H0, b, L_bar/H0,H0]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -176,19 +176,17 @@ if __name__ == '__main__':
 
     # Set physical parameters
     H_0 = 73
-    L_bar = 0.9/H_0
+    L_bar = 0.9
     b = 5
-    physical_params_hs = np.array([L_bar, b, H_0])
-    physical_params_exp = np.array([L_bar, 10, H_0])
-    omega_m = omega_luisa_to_CDM(b, L_bar, H_0)
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0) #L_bar ya en unidades de H_0 (adentro de esta funcion se divide L_bar por H_0)
 
-    physical_params = [L_bar, b, H_0]
+    physical_params = [L_bar, b, H_0] #L_bar ya en unidades de H_0
 
-    integrator(physical_params)
+    integrator(physical_params) #Adentro de esta funcion se divide L_bar por H_0
+
     # Plot Hubble diagrams for different models
     plt.figure()
     
-    #for model_name, physical_params in [('HS', physical_params_hs), ('EXP', physical_params_exp)]:
     plot_hubble_diagram(physical_params,hubble_th=False)
     
     #Plot LCDM Hubble parameter
