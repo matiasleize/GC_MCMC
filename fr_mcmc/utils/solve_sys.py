@@ -8,6 +8,7 @@ and evaluate the difference.
 
 TODO: Implement Starobinsky model integration.
 '''
+
 import os
 import time
 
@@ -25,14 +26,23 @@ path_datos_global = os.path.dirname(path_git)
 os.chdir(path_git)
 os.sys.path.append("./fr_mcmc/utils/")
 from LambdaCDM import H_LCDM
-from taylor import Taylor_HS
-#%%
 
+#%%
+'''
 def F_H_prime(H, params):
     lamb, L, beta, L_bar = params
     #FH_prime = 2 * H #Caso LCDM
     aux = 2 * lamb * L**6 * (lamb * (L*H)**4 + 2) * np.exp(lamb*(L*H)**4) + beta * L_bar**6 * (beta*(L_bar*H)**2 - 4) * np.exp(- beta*(L_bar*H)**2)
     FH_prime = 2 * H * (1 + H**6 * aux) 
+    return FH_prime
+'''
+
+def F_H_prime(H, params):
+    lamb, L, beta, L_bar = params
+    #FH_prime = 2 * H #Caso LCDM
+    #aux = 2 * lamb * L**6 * (lamb * (L*H)**4 + 2) * np.exp(lamb*(L*H)**4) + beta * L_bar**6 * (beta*(L_bar*H)**2 - 4) * np.exp(- beta*(L_bar*H)**2)
+    aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**2)*(beta-4*beta**2*(L*H)**8)
+    FH_prime = 2 * H * (1 + aux) 
     return FH_prime
 
 
@@ -96,7 +106,7 @@ def integrator(physical_params, num_z_points=int(10**5),
     
     L_bar, b, H0 = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar/H0,H0]
+    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -176,13 +186,13 @@ if __name__ == '__main__':
 
     # Set physical parameters
     H_0 = 73
-    L_bar = 0.9
-    b = 5
-    omega_m = omega_luisa_to_CDM(b, L_bar, H_0) #L_bar ya en unidades de H_0 (adentro de esta funcion se divide L_bar por H_0)
+    L_bar = 0.98 # In units of H0
+    b = 0.5
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0) #L_bar in units of H0 (inside the function L_bar is divided by H0)
 
-    physical_params = [L_bar, b, H_0] #L_bar ya en unidades de H_0
+    physical_params = [L_bar, b, H_0] #L_bar in units of H0
 
-    integrator(physical_params) #Adentro de esta funcion se divide L_bar por H_0
+    #Inside the function integrator L_bar is divided by H0)
 
     # Plot Hubble diagrams for different models
     plt.figure()
@@ -190,7 +200,7 @@ if __name__ == '__main__':
     plot_hubble_diagram(physical_params,hubble_th=False)
     
     #Plot LCDM Hubble parameter
-    redshift_LCDM = np.linspace(0,10,int(10**5))
+    redshift_LCDM = np.linspace(0,3,int(10**5))
     plt.plot(redshift_LCDM, H_LCDM(redshift_LCDM,omega_m,H_0),'k--',label=r'$\rm \Lambda CDM$') 
     
     # Format plot

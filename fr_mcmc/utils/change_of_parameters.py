@@ -10,7 +10,8 @@ c_luz_km = c_luz/1000
 def F_H(H, params):     
     lamb, L, beta, L_bar = params
     #FH = H**2 #Caso LCDM
-    FH = H**2 + H**8 * (lamb * L**6 * np.exp(lamb*(L*H)**4) - beta * L_bar**6 * np.exp(-beta*(L_bar*H)**2)) 
+    #FH = H**2 + H**8 * (lamb * L**6 * np.exp(lamb*(L*H)**4) - beta * L_bar**6 * np.exp(-beta*(L_bar*H)**2))
+    FH = H**2 + H**8 * lamb * L**6 * np.exp(lamb*(L*H)**4) -  H**2 * beta * np.exp(-beta*(L_bar*H)**8)
     return FH
 
 def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa=0.999916):
