@@ -8,6 +8,8 @@ index     free parameters             fixed parameters
 31        L_bar, b, H_0             Mabs
 32        Mabs, L_bar, H_0          b
 33        Mabs, L_bar, b            H_0
+34        Mabs, b, H_0              L_bar
+
 
 21        L_bar, b                  Mabs, H_0
 22        L_bar, H_0                Mabs, b
