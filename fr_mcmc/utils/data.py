@@ -5,8 +5,64 @@ Functions related to data management
 import numpy as np
 from numpy.linalg import inv
 import numpy.ma as ma
+import pandas as pd
 
-def leer_data_pantheon(archivo_pantheon, masked = False, min_z = 0, max_z = 30):
+def read_data_pantheon_plus_shoes(file_pantheon_plus,file_pantheon_plus_shoes_cov):
+
+    '''
+    Takes Pantheon+ data and extracts the data from the zhd and zhel 
+    redshifts, its error dz, in addition to the data of the apparent magnitude
+    with its error: mb and dm. With the errors of the apparent magnitude 
+    builds the associated correlation matrix. The function returns the
+    information of the redshifts, the apparent magnitude 
+    and the correlation matrix inverse.
+    '''
+
+    # Read text with data
+    df = pd.read_csv(file_pantheon_plus,delim_whitespace=True)
+    zhd = df['zHD']
+    zhel = df['zHEL']
+    mb = df['m_b_corr']
+    mu_shoes = df['MU_SH0ES']
+    is_cal = df['IS_CALIBRATOR']
+    
+    #Load the covariance matrix elements
+    Ccov=np.loadtxt(file_pantheon_plus_shoes_cov,unpack=True)
+    Ccov=Ccov[1:] #The first element is the total number of row/columns
+    #We made the final covariance matrix..
+    sn=len(zhd)
+    Ccov=Ccov.reshape(sn,sn)
+    #.. and finally we invert it
+    Cinv=inv(Ccov)
+
+    return zhd, zhel, mb, mu_shoes, Cinv, is_cal
+
+def read_data_pantheon_plus(file_pantheon_plus,file_pantheon_plus_cov):
+
+    '''
+    Takes Pantheon+ data and extracts the data from the zhd and zhel 
+    redshifts, its error dz, in addition to the data of the apparent magnitude
+    with its error: mb and dm. With the errors of the apparent magnitude 
+    builds the associated correlation matrix. The function returns the
+    information of the redshifts, the apparent magnitude 
+    and the correlation matrix inverse.
+    '''
+
+    # Read text with data
+
+    data = pd.read_csv(file_pantheon_plus,delim_whitespace=True)
+    ww = (data['zHD']>0.01) | (np.array(data['IS_CALIBRATOR'],dtype=bool))
+
+    zhd = data['zHD'][ww]
+    zhel = data['zHEL'][ww]
+    mb = data['m_b_corr'][ww]
+
+    Ccov=np.load(file_pantheon_plus_cov)['arr_0']
+    Cinv=inv(Ccov)
+
+    return zhd, zhel, Cinv, mb
+
+def read_data_pantheon(file_pantheon, masked = False, min_z = 0, max_z = 30):
 
     '''
     Takes Pantheon data and extracts the data from the zcmb and zhel 
@@ -18,7 +74,7 @@ def leer_data_pantheon(archivo_pantheon, masked = False, min_z = 0, max_z = 30):
     '''
 
     # Read text with data
-    zcmb,zhel,dz,mb,dmb=np.loadtxt(archivo_pantheon
+    zcmb,zhel,dz,mb,dmb=np.loadtxt(file_pantheon
                                    , usecols=(1,2,3,4,5),unpack=True)
     #Create the diagonal matrx with m_B uncertainties (it depends on alpha and beta).
     Dstat=np.diag(dmb**2.)
@@ -29,7 +85,6 @@ def leer_data_pantheon(archivo_pantheon, masked = False, min_z = 0, max_z = 30):
     Csys=Csys.reshape(sn,sn)
     #We made the final covariance matrix..
     Ccov=Csys+Dstat
-
 
     if masked == True:
         mask = ma.masked_where((zcmb <= max_z) & ((zcmb >= min_z)) , zcmb).mask
@@ -45,12 +100,12 @@ def leer_data_pantheon(archivo_pantheon, masked = False, min_z = 0, max_z = 30):
     Cinv=inv(Ccov)
     return zcmb, zhel, Cinv, mb
 
-def leer_data_pantheon_2(archivo_pantheon,archivo_pantheon_2):
-    '''Idem leer_data_pantheon, apart from importing nuisance parameters.'''
+def read_data_pantheon_2(file_pantheon,file_pantheon_2):
+    '''Idem read_data_pantheon, apart from importing nuisance parameters.'''
     # Read text with data
-    zcmb0,zhel0,dz0,mb0,dmb0=np.loadtxt(archivo_pantheon
+    zcmb0,zhel0,dz0,mb0,dmb0=np.loadtxt(file_pantheon
                     , usecols=(1,2,3,4,5),unpack=True)
-    zcmb_1,hmass,x1,cor=np.loadtxt(archivo_pantheon_2,usecols=(7,13,20,22),
+    zcmb_1,hmass,x1,cor=np.loadtxt(file_pantheon_2,usecols=(7,13,20,22),
                         unpack=True)
     #Create the diagonal matrx with m_B uncertainties (it depends on alpha and beta).
     Dstat=np.diag(dmb0**2.)
@@ -62,24 +117,21 @@ def leer_data_pantheon_2(archivo_pantheon,archivo_pantheon_2):
     #We made the final covariance matrix and then we invert it.
     Ccov=Csys+Dstat
     Cinv=inv(Ccov)
-
     return zcmb0, zcmb_1, zhel0, Cinv, mb0, x1, cor, hmass
 
-
-
-def leer_data_cronometros(archivo_cronometros):
+def read_data_chronometers(file_chronometers):
     # Read text with data
-    z, h, dh = np.loadtxt(archivo_cronometros, usecols=(0,1,2), unpack=True)
+    z, h, dh = np.loadtxt(file_chronometers, usecols=(0,1,2), unpack=True)
     return z, h, dh
 
-def leer_data_BAO(archivo_BAO):
-    z, valores_data, errores_est, errores_sist, wb_fid = np.loadtxt(archivo_BAO,
+def read_data_BAO(file_BAO):
+    z, data_values, errors_est, errors_sist, wb_fid = np.loadtxt(file_BAO,
     usecols=(0,1,2,3,4), skiprows=1,unpack=True)
-    errores_totales_cuad = errores_est**2 + errores_sist**2
-    return z, valores_data, errores_totales_cuad, wb_fid
+    total_errors_cuad = errors_est**2 + errors_sist**2
+    return z, data_values, total_errors_cuad, wb_fid
 
-def leer_data_AGN(archivo_AGN):
-    z, Fuv, eFuv, Fx, eFx = np.loadtxt(archivo_AGN,
+def read_data_AGN(file_AGN):
+    z, Fuv, eFuv, Fx, eFx = np.loadtxt(file_AGN,
     usecols=(3,4,5,6,7), unpack=True)
     arr1inds = z.argsort()
     sorted_z = z[arr1inds]
@@ -87,12 +139,11 @@ def leer_data_AGN(archivo_AGN):
     sorted_eFuv = eFuv[arr1inds]
     sorted_Fx = Fx[arr1inds]
     sorted_eFx = eFx[arr1inds]
-
     return sorted_z, sorted_Fuv, sorted_eFuv, sorted_Fx, sorted_eFx
 
-def leer_data_BAO_odintsov(archivo_BAO_odintsov):
+def read_data_BAO_odintsov(file_BAO_odintsov):
     # Read text with data
-    z, h, dh, rd_fid = np.loadtxt(archivo_BAO_odintsov, usecols=(0,1,2,3), unpack=True)
+    z, h, dh, rd_fid = np.loadtxt(file_BAO_odintsov, usecols=(0,1,2,3), unpack=True)
     return z, h, dh, rd_fid
 #%%
 if __name__ == '__main__':
@@ -102,34 +153,40 @@ if __name__ == '__main__':
     path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
     os.chdir(path_git)
 
+    #%% Pantheon plus
+    os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
+    zhd, zhel, Cinv, mb = read_data_pantheon_plus('Pantheon+SH0ES.dat',
+                            'covmat_pantheon_plus_only.npz')
+
+    #%% Pantheon plus + SH0ES
+    os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
+    zhd, zhel, Cinv, mb, is_cal = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
+                                    'Pantheon+SH0ES_STAT+SYS.cov')
+
+    #%% Pantheon
+    os.chdir(path_git+'/fr_mcmc/source/Pantheon')
+    zcmb, zhel, Cinv, mb = read_data_pantheon('lcparam_full_long_zhel.txt')
+
     #%% AGN
     os.chdir(path_git+'/fr_mcmc/source/AGN')
-    aux = leer_data_AGN('table3.dat')
-
-    #%% Supernovae
-    os.chdir(path_git+'/fr_mcmc/source/Pantheon')
-    zcmb, zhel, Cinv, mb = leer_data_pantheon('lcparam_full_long_zhel.txt')
-    #zcmb, zhel, Cinv, mb
+    aux = read_data_AGN('table3.dat')
 
     #%% Cosmic chronometers
     os.chdir(path_git+'/fr_mcmc/source/CC')
-#    z_data, H_data, dH  = leer_data_cronometros('chronometers_data.txt')
-    z_data, H_data, dH  = leer_data_cronometros('chronometers_data_nunes.txt')
+    z_data, H_data, dH  = read_data_chronometers('chronometers_data.txt')
 
     #%% BAO
     os.chdir(path_git+'/fr_mcmc/source/BAO')
-    archivo_BAO='BAO_data_da.txt'
-
-    z, valores_data, errores_data_cuad = leer_data_BAO(archivo_BAO)
-    #z, valores_data, errores_data_cuad
+    file_BAO='BAO_data_da.txt'
+    z, data_values, data_error_cuad, _ = read_data_BAO(file_BAO)
     
     #%%
     os.chdir(path_git+'/fr_mcmc/source/BAO')
-    archivo_BAO='BAO_data.txt'
-    df = pd.read_csv(archivo_BAO,sep='\t')
+    file_BAO='BAO_data.txt'
+    df = pd.read_csv(file_BAO,sep='\t')
     z_data = df.to_numpy()[:,0]
-    valores_data = df.to_numpy()[:,1]
-    errores_est = df.to_numpy()[:,2]
-    errores_sist = df.to_numpy()[:,3]
-    errores_totales_cuad = errores_est**2 + errores_sist**2
+    data_values = df.to_numpy()[:,1]
+    errors_est = df.to_numpy()[:,2]
+    errors_sist = df.to_numpy()[:,3]
+    total_errors_cuad = errors_est**2 + errors_sist**2
     df.to_numpy()[:,4]
