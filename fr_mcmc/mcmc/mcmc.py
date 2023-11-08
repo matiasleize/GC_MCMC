@@ -17,7 +17,8 @@ path_datos_global = os.path.dirname(path_git)
 # Obs: To import packages this is the sintaxis to change paths:
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/')
 from utils.sampling import MCMC_sampler
-from utils.data import leer_data_pantheon, leer_data_cronometros, leer_data_BAO, leer_data_AGN
+from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, read_data_pantheon,\
+                       read_data_chronometers, read_data_BAO, read_data_AGN
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
 from config import cfg as config
@@ -28,7 +29,7 @@ os.chdir(path_git + '/fr_mcmc/mcmc/')
 def run():
     output_dir = config.OUTPUT_DIR
     model = config.MODEL
-    params_fijos = config.FIXED_PARAMS # Fixed parameters
+    fixed_params = config.FIXED_PARAMS # Fixed parameters
     index = config.LOG_LIKELIHOOD_INDEX
     num_params = int(str(index)[0])
     all_analytic = config.ALL_ANALYTIC
@@ -46,10 +47,29 @@ def run():
     path_data = path_git + '/fr_mcmc/source/'
     datasets = []
 
+    # Pantheon Plus + Shoes
+    if config.USE_PPLUS_SHOES == True:
+        os.chdir(path_data + 'Pantheon_plus_shoes/')
+
+        ds_SN_plus_shoes = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
+                                    'Pantheon+SH0ES_STAT+SYS.cov')
+        datasets.append('_PPS')
+    else:
+        ds_SN_plus_shoes = None
+
+    # Pantheon Plus
+    if config.USE_PPLUS == True:
+        os.chdir(path_data + 'Pantheon_plus_shoes/')
+        ds_SN_plus = read_data_pantheon_plus('Pantheon+SH0ES.dat',
+                                'covmat_pantheon_plus_only.npz')        
+        datasets.append('_PP')
+    else:
+        ds_SN_plus = None
+
     # Supernovae type IA
     if config.USE_SN == True:
         os.chdir(path_data + 'Pantheon/')
-        ds_SN = leer_data_pantheon('lcparam_full_long_zhel.txt')
+        ds_SN = read_data_pantheon('lcparam_full_long_zhel.txt')
         datasets.append('_SN')
     else:
         ds_SN = None
@@ -57,7 +77,7 @@ def run():
     # Cosmic Chronometers
     if config.USE_CC == True:
         os.chdir(path_data + 'CC/')
-        ds_CC = leer_data_cronometros('chronometers_data.txt')
+        ds_CC = read_data_chronometers('chronometers_data.txt')
         datasets.append('_CC')
     else:
         ds_CC = None
@@ -69,7 +89,7 @@ def run():
         archivos_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
                         'BAO_data_dv.txt','BAO_data_H.txt']
         for i in range(5):
-            aux = leer_data_BAO(archivos_BAO[i])
+            aux = read_data_BAO(archivos_BAO[i])
             ds_BAO.append(aux)
         datasets.append('_BAO')
     else:
@@ -79,7 +99,7 @@ def run():
     # AGN
     if config.USE_AGN == True:
         os.chdir(path_data + 'AGN/')
-        ds_AGN = leer_data_AGN('table3.dat')
+        ds_AGN = read_data_AGN('table3.dat')
         datasets.append('_AGN')
     else:
         ds_AGN = None
@@ -94,8 +114,10 @@ def run():
     datasets = str(''.join(datasets))
 
     # Define the log-likelihood distribution
-    ll = lambda theta: log_likelihood(theta, params_fijos, 
+    ll = lambda theta: log_likelihood(theta, fixed_params, 
                                         index=index,
+                                        dataset_SN_plus_shoes = ds_SN_plus_shoes,
+                                        dataset_SN_plus = ds_SN_plus,
                                         dataset_SN = ds_SN,
                                         dataset_CC = ds_CC,
                                         dataset_BAO = ds_BAO,
@@ -124,6 +146,10 @@ def run():
         elif index == 33:
             M, L_bar, b = theta
             if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
+                return 0.0
+        elif index == 34:
+            M, b, H0 = theta
+            if (M_min < M < M_max and  b_min < b < b_max and H0_min < H0 < H0_max):
                 return 0.0
         elif index == 21:
             L_bar, b = theta

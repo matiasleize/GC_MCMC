@@ -16,81 +16,86 @@ path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 from change_of_parameters import omega_luisa_to_CDM
 from solve_sys import Hubble_th
-from supernovae import magn_aparente_teorica, chi2_supernovae
+from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
 from AGN import zs_2_logDlH0
 
-def chi2_sin_cov(teo, data, errores_cuad):
+def chi2_sin_cov(teo, data, errors_cuad):
     '''
     Calculate chi square assuming no correlation.
 
     teo (array): Theoretical prediction of the model.
     data (array): Observational data to compare with the model.
-    errores_cuad (array): The square of the errors of the data.
+    errors_cuad (array): The square of the errors of the data.
 
     '''
 
-    chi2 = np.sum((data-teo)**2/errores_cuad)
+    chi2 = np.sum((data-teo)**2/errors_cuad)
     return chi2
 
-def all_parameters(theta, params_fijos, index):
+def all_parameters(theta, fixed_params, index):
     '''
     Auxiliary function that reads and organizes fixed and variable parameters into one 
     list according to the index criteria.
 
     theta: object with variable parameters.
-    params_fijos: object with fixed parameters.
+    fixed_params: object with fixed parameters.
     index (int): indicate if the parameters are fixed or variable.
     
     '''
 
     if index == 4:
         [Mabs, L_bar, b, H_0] = theta
-        _ = params_fijos
+        _ = fixed_params
 
     elif index == 31:
         [L_bar, b, H_0] = theta
-        Mabs = params_fijos
+        Mabs = fixed_params
 
     elif index == 32:
         [Mabs, L_bar, H_0] = theta
-        b = params_fijos
+        b = fixed_params
 
     elif index == 33:
         [Mabs, L_bar, b] = theta
-        H_0 = params_fijos
+        H_0 = fixed_params
+
+    elif index == 34:
+        [Mabs, b, H_0] = theta
+        L_bar = fixed_params
 
     elif index == 21:
         [L_bar, b] = theta
-        [Mabs, H_0] = params_fijos
+        [Mabs, H_0] = fixed_params
 
     elif index == 22:
         [L_bar, H_0] = theta
-        [Mabs, b] = params_fijos
+        [Mabs, b] = fixed_params
 
     elif index == 23:
         [Mabs, L_bar] = theta
-        [b, H_0] = params_fijos
+        [b, H_0] = fixed_params
 
     elif index == 1:
         L_bar = theta
-        [Mabs, b, H_0] = params_fijos
+        [Mabs, b, H_0] = fixed_params
 
 
     return [Mabs, L_bar, b, H_0]
 
 
-def params_to_chi2(theta, params_fijos, index=0,
-                    dataset_SN=None, dataset_CC=None,
-                    dataset_BAO=None, dataset_AGN=None, H0_Riess=False,
-                    num_z_points=int(10**5), model='HS',n=1,
-                    nuisance_2 = False, errores_agrandados=False,
-                    all_analytic=False):
+def params_to_chi2(theta, fixed_params, index=0,
+                   dataset_SN_plus_shoes=None, dataset_SN_plus=None,
+                   dataset_SN=None, dataset_CC=None,
+                   dataset_BAO=None, dataset_AGN=None, H0_Riess=False,
+                   num_z_points=int(10**5), model='HS',n=1,
+                   nuisance_2 = False, enlarged_errors=False,
+                   all_analytic=False):
     '''
     Given the free parameters of the model, return chi square for the data.
     
     theta: object with variable parameters.
-    params_fijos: object with fixed parameters.
+    fixed_params: object with fixed parameters.
     index (int): indicate if the parameters are fixed or variable.
 
     dataset_SN:
@@ -103,7 +108,7 @@ def params_to_chi2(theta, params_fijos, index=0,
     model (str): cosmological model ('LCDM', 'HS', 'EXP').
     n (int): (1, 2)
     nuisance_2 (bool):
-    errores_agrandados (bool):
+    enlarged_errors (bool):
     all_analytic (bool):
     '''
 
@@ -113,24 +118,36 @@ def params_to_chi2(theta, params_fijos, index=0,
     chi2_AGN = 0
     chi2_H0 =  0
 
-    [Mabs, L_bar, b, H_0] = all_parameters(theta, params_fijos, index)
+    [Mabs, L_bar, b, H_0] = all_parameters(theta, fixed_params, index)
     omega_m = omega_luisa_to_CDM(b,L_bar,H_0)
 
     physical_params = [L_bar,b,H_0]
-    zs_modelo, Hs_modelo = Hubble_th(physical_params, n=n, model=model,
+    zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
 
     if (dataset_CC != None or dataset_BAO != None or dataset_AGN != None):
-        Hs_interpolado = interp1d(zs_modelo, Hs_modelo)
+        Hs_interpolado = interp1d(zs_model, Hs_model)
 
-    if (dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
-        int_inv_Hs = cumtrapz(Hs_modelo**(-1), zs_modelo, initial=0)
-        int_inv_Hs_interpolado = interp1d(zs_modelo, int_inv_Hs)
+    #if (dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
+    #    int_inv_Hs = cumtrapz(Hs_model**(-1), zs_model, initial=0)
+    #    int_inv_Hs_interpolado = interp1d(zs_model, int_inv_Hs)
+
+    if (dataset_SN_plus_shoes != None or dataset_SN_plus != None or
+        dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
+        int_inv_Hs = cumtrapz(Hs_model**(-1), zs_model, initial=0)
+        int_inv_Hs_interpol = interp1d(zs_model, int_inv_Hs)
+
+    if dataset_SN_plus_shoes != None:
+        zhd, zhel, mb, mu_shoes, Cinv, is_cal = dataset_SN_plus_shoes #Import the data
+        muobs = mb - Mabs
+        muth_num = aparent_magnitude_th(int_inv_Hs_interpol, zhd, zhel) #Numeric prediction of mu
+        muth = muth_num*(-is_cal + 1) + mu_shoes*(is_cal) #Merge num predicion with mu_shoes
+        chi2_SN = chi2_supernovae(muth, muobs, Cinv)
 
     if dataset_SN != None:
         zcmb, zhel, Cinv, mb = dataset_SN #Import the data
-        muth = magn_aparente_teorica(int_inv_Hs_interpolado, zcmb, zhel)
+        muth = aparent_magnitude_th(int_inv_Hs_interpol, zcmb, zhel)
         muobs =  mb - Mabs
         chi2_SN = chi2_supernovae(muth, muobs, Cinv)
 
@@ -146,14 +163,14 @@ def params_to_chi2(theta, params_fijos, index=0,
             (z_data_BAO, valores_data, errores_data_cuad,wb_fid) = dataset_BAO[i]
             if i==0: #Da entry
                 rd = r_drag(omega_m,H_0,wb_fid) # rd calculation
-                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpolado, z_data_BAO, i)
-                output_th = Ds_to_obs_final(zs_modelo, distancias_teoricas, rd, i)
+                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
+                output_th = Ds_to_obs_final(zs_model, distancias_teoricas, rd, i)
             else: #If not..
-                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpolado, z_data_BAO, i)
+                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
                      rd = r_drag(omega_m,H_0,wb_fid[j]) #rd calculation
-                     output_th[j] = Ds_to_obs_final(zs_modelo,distancias_teoricas[j],rd,i)
+                     output_th[j] = Ds_to_obs_final(zs_model,distancias_teoricas[j],rd,i)
             #Chi square calculation for each datatype (i)
             chies_BAO[i] = chi2_sin_cov(output_th,valores_data,errores_data_cuad)
 
@@ -173,7 +190,7 @@ def params_to_chi2(theta, params_fijos, index=0,
             ebeta = 0.437
             gamma = 0.622
             egamma = 0.014
-        elif errores_agrandados == True:
+        elif enlarged_errors == True:
             beta = 7.735
             ebeta = 0.6
             gamma = 0.648
@@ -184,7 +201,7 @@ def params_to_chi2(theta, params_fijos, index=0,
             gamma = 0.648
             egamma = 0.007
 
-        DlH0_teo = zs_2_logDlH0(int_inv_Hs_interpolado(z_data)*H_0,z_data)
+        DlH0_teo = zs_2_logDlH0(int_inv_Hs_interpol(z_data)*H_0,z_data)
         DlH0_obs =  np.log10(3.24) - 25 + (logFx - gamma * logFuv - beta) / (2*gamma - 2)
 
         df_dgamma =  (-logFx+beta+logFuv) / (2*(gamma-1)**2)
@@ -193,7 +210,7 @@ def params_to_chi2(theta, params_fijos, index=0,
         chi2_AGN = chi2_sin_cov(DlH0_teo, DlH0_obs, eDlH0_cuad)
 
     if H0_Riess == True:
-        chi2_H0 = ((Hs_modelo[0]-73.48)/1.66)**2
+        chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
 
     return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_H0
 
@@ -210,121 +227,51 @@ if __name__ == '__main__':
 
     path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
     os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
-    from data import leer_data_pantheon, leer_data_cronometros, leer_data_BAO, leer_data_AGN
+    from data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, \
+                    read_data_pantheon, read_data_chronometers, read_data_BAO, read_data_AGN
+    
+    # Pantheon plus + SH0ES
+    os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
+    ds_SN_plus_shoes = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
+                                    'Pantheon+SH0ES_STAT+SYS.cov')
 
-    # Supernovas
+    # Pantheon plus
+    os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
+    ds_SN_plus = read_data_pantheon_plus('Pantheon+SH0ES.dat',
+                                'covmat_pantheon_plus_only.npz')
+
+    # Pantheon
     os.chdir(path_git+'/fr_mcmc/source/Pantheon/')
-    ds_SN = leer_data_pantheon('lcparam_full_long_zhel.txt')
+    ds_SN = read_data_pantheon('lcparam_full_long_zhel.txt')
 
-    # Cronómetros
+    # Cosmic Chronometers
     os.chdir(path_git+'/fr_mcmc/source/CC/')
-    ds_CC = leer_data_cronometros('chronometers_data.txt')
+    ds_CC = read_data_chronometers('chronometers_data.txt')
 
     # BAO
     os.chdir(path_git+'/fr_mcmc/source/BAO/')
     ds_BAO = []
-    archivos_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
+    files_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
                     'BAO_data_dv.txt','BAO_data_H.txt']
     for i in range(5):
-        aux = leer_data_BAO(archivos_BAO[i])
+        aux = read_data_BAO(files_BAO[i])
         ds_BAO.append(aux)
 
     # AGN
     os.chdir(path_git+'/fr_mcmc/source/AGN')
-    ds_AGN = leer_data_AGN('table3.dat')
+    ds_AGN = read_data_AGN('table3.dat')
+
 
 
     #%%
-    a = params_to_chi2([-19.37, 0.9, 70], 1.0, index=32,
+    chi2 = params_to_chi2([-19.37, 0.9, 70], 1.0, index=32,
+                    dataset_SN_plus_shoes = ds_SN_plus_shoes,
+                    dataset_SN_plus = ds_SN_plus,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
+                    dataset_BAO = ds_BAO,
+                    dataset_AGN = ds_AGN,
                     H0_Riess = True,
-                    model = 'HS'
+                    model = 'LCDM'
                     )
-    print(a)
-    #%%
-    from scipy.stats import chi2
-    N = len(ds_SN[0])
-    P = 3
-    df = N - P
-    x = np.linspace(0,2000, 10**5)
-    y = chi2.pdf(x, df, loc=0, scale=1)
-    #plt.vlines(a,0,np.max(y),'r')
-    #plt.plot(x,y)
-
-    #%%
-    bs = np.linspace(3,7,100)
-    chis_1 = np.zeros(len(bs))
-    chis_2 = np.zeros(len(bs))
-    chis_3 = np.zeros(len(bs))
-    chis_4 = np.zeros(len(bs))
-    chis_5 = np.zeros(len(bs))
-    chis_6 = np.zeros(len(bs))
-    for (i,b) in enumerate(bs):
-        #print(i,b)
-        chis_1[i] = params_to_chi2([-19.41, 0.9/62, b, 62], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-        chis_2[i] = params_to_chi2([-19.41, 0.9/63, b, 63], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-
-        chis_3[i] = params_to_chi2([-19.41, 0.9/64, b, 64], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-        chis_4[i] = params_to_chi2([-19.41, 0.9/65, b, 65], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-        chis_5[i] = params_to_chi2([-19.41, 0.9/66, b, 66], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-        chis_6[i] = params_to_chi2([-19.41, 0.9/70, b, 67], 0, index=4,
-                    dataset_SN = ds_SN,
-                    dataset_CC = ds_CC,
-                    #dataset_BAO = ds_BAO,
-                    #dataset_AGN = ds_AGN,
-                    #H0_Riess = True,
-                    model = 'EXP'
-                    )
-    #1077.8293845284927/(1048+20+len(ds_CC[0])-4)
-    #%%
-    plt.title('CC+SN, L_bar=0.9, M=-19.41')
-    plt.grid(True)
-    plt.plot(bs,chis_1,label='H0=62')
-    plt.plot(bs,chis_2,label='H0=63')
-    plt.plot(bs,chis_3,label='H0=64')
-    plt.plot(bs,chis_4,label='H0=65')
-    plt.plot(bs,chis_5,label='H0=66')
-    plt.plot(bs,chis_6,label='H0=67')
-    plt.ylabel(r'$\chi^2$')
-    plt.xlabel(r'$\beta$')
-    plt.legend()
-    #plt.savefig('cc+sn.png')
-    plt.show()
+    print(chi2)
