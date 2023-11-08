@@ -40,11 +40,11 @@ def Hs_2_logDlH0(zs,Hs,z_data):
 
 
 
-def chi2_AGN_nuisance(teo, data, errores_cuad):
-    chi2 = np.sum( ((data-teo)**2/errores_cuad) + np.log(2*np.pi*errores_cuad))
+def chi2_AGN_nuisance(teo, data, errors_cuad):
+    chi2 = np.sum( ((data-teo)**2/errors_cuad) + np.log(2*np.pi*errors_cuad))
     return chi2
 
-def params_to_chi2_AGN_nuisance(theta, params_fijos, dataset_AGN, n=1,
+def params_to_chi2_AGN_nuisance(theta, fixed_params, dataset_AGN, n=1,
                                 num_z_points=int(10**6), model='HS'
                                 ,less_z=False,all_analytic=False):
     '''
@@ -56,29 +56,29 @@ def params_to_chi2_AGN_nuisance(theta, params_fijos, dataset_AGN, n=1,
         if isinstance(theta,float):
             #print(theta)
             omega_m = theta
-            [beta, gamma, delta, H_0] = params_fijos
-            zs_modelo = np.linspace(0,10,10**5)
-            Hs_modelo = H_LCDM(zs_modelo,omega_m,H_0)
+            [beta, gamma, delta, H_0] = fixed_params
+            zs_model = np.linspace(0,10,10**5)
+            Hs_model = H_LCDM(zs_model,omega_m,H_0)
 
 
         else:
             if len(theta) == 4:
                 [omega_m, beta, gamma, delta] = theta #This beta is different from the other
-                H_0 = params_fijos
-                zs_modelo = np.linspace(0,10,10**5)
-                Hs_modelo = H_LCDM(zs_modelo,omega_m,H_0)
+                H_0 = fixed_params
+                zs_model = np.linspace(0,10,10**5)
+                Hs_model = H_LCDM(zs_model,omega_m,H_0)
 
 
     else:
         if len(theta) == 5:
             [omega_m, b, beta, gamma, delta] = theta #This beta is different from the other
-            H_0 = params_fijos
+            H_0 = fixed_params
         elif len(theta) == 4:
             [omega_m, b] = theta
-            [beta, gamma, delta, H_0] = params_fijos #This beta is different from the other
+            [beta, gamma, delta, H_0] = fixed_params #This beta is different from the other
 
         physical_params = [omega_m,b,H_0]
-        zs_modelo, Hs_modelo = Hubble_th(physical_params, n=n, model=model,
+        zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                     z_min=0, z_max=10, num_z_points=num_z_points,
                                     all_analytic=all_analytic)
 
@@ -101,7 +101,7 @@ def params_to_chi2_AGN_nuisance(theta, params_fijos, dataset_AGN, n=1,
         eFx = eFx_unmasked
 
 
-    Dl_teo = Hs_2_logDl(zs_modelo,Hs_modelo,z_data) #Mpc
+    Dl_teo = Hs_2_logDl(zs_model,Hs_model,z_data) #Mpc
     Dl_teo_cm = Dl_teo - np.log10(3.24) + 25
     psi = beta + gamma * logFuv + 2 * (gamma-1) * (Dl_teo_cm + 0.5 * np.log10(4*np.pi))
 
@@ -114,10 +114,10 @@ def params_to_chi2_AGN_nuisance(theta, params_fijos, dataset_AGN, n=1,
 #%%
 if __name__ == '__main__':
     #Data AGN
-    from data import leer_data_AGN
+    from data import read_data_AGN
     from matplotlib import pyplot as plt
     os.chdir(path_git+'/fr_mcmc/source/AGN')
-    data_agn = leer_data_AGN('table3.dat')
+    data_agn = read_data_AGN('table3.dat')
 
     beta_true =  6.8 #7.735
     gamma_true = 0.648
@@ -126,11 +126,11 @@ if __name__ == '__main__':
 
 
     for j,beta_true in enumerate(np.linspace(7.9,8.5,20)):
-        params_fijos = [beta_true, gamma_true, delta_true, H0_true]
+        fixed_params = [beta_true, gamma_true, delta_true, H0_true]
         omegas = np.linspace(0,1,50)
         chi_2 = np.zeros(50)
         for i,omega_m in enumerate(omegas):
-            chi_2[i] = params_to_chi2_AGN_nuisance(omega_m, params_fijos,
+            chi_2[i] = params_to_chi2_AGN_nuisance(omega_m, fixed_params,
                                 data_agn, model='LCDM')
         plt.figure()
         plt.plot(omegas, chi_2)

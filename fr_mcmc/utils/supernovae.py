@@ -20,7 +20,7 @@ from scipy.constants import c as c_luz #meters/seconds
 c_luz_km = c_luz/1000; #kilometers/seconds
 #Parameters order: Mabs,omega_m,b,H_0,n
 
-def magn_aparente_teorica(int_inv_Hs_interpolado, zcmb, zhel):
+def aparent_magnitude_th(int_inv_Hs_interpolado, zcmb, zhel):
     '''
     Given an interpolate function of 1/H and arrays for zcmb and zhel,
     this function returns the theoretical expression for the distance modulus (mu)
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     path_datos_global = os.path.dirname(path_git)
     os.chdir(path_git)
     sys.path.append('./fr_mcmc/utils/')
-    from data import leer_data_pantheon_2
-    from data import leer_data_pantheon
+    from data import read_data_pantheon_2
+    from data import read_data_pantheon
     #Parameters order: Mabs,omega_m,b,H_0,n
 
     #Fixed parameters for testing:
@@ -71,17 +71,17 @@ if __name__ == '__main__':
     gamma_true = 0.053
     n = 1
 
-    params_fijos = [H0_true,n]
+    fixed_params = [H0_true,n]
     theta = [M_true,omega_m_true,b_true]
 
     #%% SN data
     os.chdir(path_git+'/fr_mcmc/source/Pantheon')
 
-    _, zcmb, zhel, Cinv, mb0, x1, cor, hmass = leer_data_pantheon_2(
+    _, zcmb, zhel, Cinv, mb0, x1, cor, hmass = read_data_pantheon_2(
                 'lcparam_full_long_zhel.txt','ancillary_g10.txt')
-    zcmb_1,zhel_1, Cinv_1, mb_1 = leer_data_pantheon('lcparam_full_long_zhel.txt')
+    zcmb_1,zhel_1, Cinv_1, mb_1 = read_data_pantheon('lcparam_full_long_zhel.txt')
 
-    params_to_chi2(theta, params_fijos, zcmb, zhel, Cinv,mb_1)
+    params_to_chi2(theta, fixed_params, zcmb, zhel, Cinv,mb_1)
     #%%
     np.all(zhel_1==zhel)
     np.where(zcmb_1==zcmb)
