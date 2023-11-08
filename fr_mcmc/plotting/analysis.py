@@ -29,6 +29,8 @@ def parameters_labels(index):
         return ['$M_{abs}$', '$\L$', '$H_{0}$']
     elif index == 33:
         return ['$M_{abs}$', '$\L$', r'$\beta$']
+    elif index == 34:
+        return ['$M_{abs}$', r'$\beta$', '$H_{0}$']
     elif index == 21:
         return ['$\L$', r'$\beta$']
     elif index == 22:
