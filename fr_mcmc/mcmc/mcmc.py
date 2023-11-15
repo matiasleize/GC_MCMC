@@ -42,6 +42,7 @@ def run():
         [L_bar_min, L_bar_max] = config.L_BAR_PRIOR
         [b_min, b_max] = config.B_PRIOR
     [H0_min, H0_max] = config.H0_PRIOR
+    [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
 
     #%% Import cosmological data
     path_data = path_git + '/fr_mcmc/source/'
@@ -95,7 +96,6 @@ def run():
     else:
         ds_BAO = None
 
-
     # AGN
     if config.USE_AGN == True:
         os.chdir(path_data + 'AGN/')
@@ -131,9 +131,17 @@ def run():
 
     # Define the prior distribution
     def log_prior(theta):
+        if index == 5:
+            M, L_bar, b, H0, omega_m = theta
+            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
+                return 0.0
         if index == 4:
             M, L_bar, b, H0 = theta
             if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                return 0.0
+        if index == 41:
+            M, b, H0, omega_m = theta
+            if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max and  omega_m_min < omega_m < omega_m_max):
                 return 0.0
         elif index == 31:
             L_bar, b, H0 = theta

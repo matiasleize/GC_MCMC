@@ -72,10 +72,10 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
     #kappa = 8 * np.pi * G_newton / 3
     kappa = 1
 
-    omega_m_0 = 0.999916
-    omega_r_0 = 1 - omega_m_0
+    [lamb, L, b, L_bar, H_0, omega_m_0] = params_ode
 
-    [lamb, L, b, L_bar, H_0] = params_ode
+    #omega_m_0 = 0.999916 #omega_m_0 es el de Luisa
+    omega_r_0 = 1 - omega_m_0
 
     F_H0 = F_H(H_0, [lamb, L, b, L_bar])
 
@@ -104,9 +104,9 @@ def integrator(physical_params, num_z_points=int(10**5),
  
     t1 = time.time()
     
-    L_bar, b, H0 = physical_params
+    L_bar, b, H0, omega_m_luisa = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0]
+    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m_luisa]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -153,11 +153,16 @@ def Hubble_th(physical_params, *args,
         A tuple of two NumPy arrays containing the redshifts and the corresponding Hubble parameters.
     '''
     
-    L_bar, b, H0 = physical_params
+    L_bar, b, H0, omega_m_luisa = physical_params
 
-    zs, Hs = integrator([L_bar, b, H0])  
+    zs, Hs = integrator([L_bar, b, H0,omega_m_luisa])  
     return zs, Hs   
+    omega_m_true = 0.24
+    b_true = 2
+    H_0=73.48
 
+    aux = c_luz_km**2 * omega_m_true / (7800 * (8315)**2 * (1-omega_m_true)) 
+    print(aux)
 #%%   
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
@@ -188,9 +193,12 @@ if __name__ == '__main__':
     H_0 = 73
     L_bar = 0.98 # In units of H0
     b = 0.5
-    omega_m = omega_luisa_to_CDM(b, L_bar, H_0) #L_bar in units of H0 (inside the function L_bar is divided by H0)
+    #omega_m_luisa = 0.999916
+    omega_m = 0.3
 
-    physical_params = [L_bar, b, H_0] #L_bar in units of H0
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
+
+    physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
 
     #Inside the function integrator L_bar is divided by H0)
 

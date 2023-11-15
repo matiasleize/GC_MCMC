@@ -21,8 +21,12 @@ from config import cfg as config
 os.chdir(path_git + '/fr_mcmc/plotting/')
 
 def parameters_labels(index):
+    if index == 5:
+        return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$', r'$\Omega_m$']
     if index == 4:
         return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$']
+    if index == 41:
+        return ['$M_{abs}$', r'$\beta$', '$H_{0}$', r'$\Omega_m$']
     elif index == 31:
         return ['$\L$', r'$\beta$', '$H_{0}$']
     elif index == 32:

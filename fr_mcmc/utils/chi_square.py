@@ -44,44 +44,51 @@ def all_parameters(theta, fixed_params, index):
     
     '''
 
+    if index == 5:
+        [Mabs, L_bar, b, H_0, omega_m] = theta
+        _ = fixed_params
+
     if index == 4:
         [Mabs, L_bar, b, H_0] = theta
-        _ = fixed_params
+        omega_m = fixed_params
+
+    if index == 41:
+        [Mabs, b, H_0, omega_m] = theta
+        L_bar = fixed_params
 
     elif index == 31:
         [L_bar, b, H_0] = theta
-        Mabs = fixed_params
+        Mabs, omega_m = fixed_params
 
     elif index == 32:
         [Mabs, L_bar, H_0] = theta
-        b = fixed_params
+        b, omega_m = fixed_params
 
     elif index == 33:
         [Mabs, L_bar, b] = theta
-        H_0 = fixed_params
+        H_0, omega_m = fixed_params
 
     elif index == 34:
         [Mabs, b, H_0] = theta
-        L_bar = fixed_params
+        L_bar, omega_m = fixed_params
 
     elif index == 21:
         [L_bar, b] = theta
-        [Mabs, H_0] = fixed_params
+        Mabs, H_0, omega_m = fixed_params
 
     elif index == 22:
         [L_bar, H_0] = theta
-        [Mabs, b] = fixed_params
+        Mabs, b, omega_m = fixed_params
 
     elif index == 23:
         [Mabs, L_bar] = theta
-        [b, H_0] = fixed_params
+        b, H_0, omega_m = fixed_params
 
     elif index == 1:
         L_bar = theta
-        [Mabs, b, H_0] = fixed_params
+        Mabs, b, H_0, omega_m = fixed_params
 
-
-    return [Mabs, L_bar, b, H_0]
+    return [Mabs, L_bar, b, H_0, omega_m]
 
 
 def params_to_chi2(theta, fixed_params, index=0,
@@ -118,10 +125,10 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_AGN = 0
     chi2_H0 =  0
 
-    [Mabs, L_bar, b, H_0] = all_parameters(theta, fixed_params, index)
-    omega_m = omega_luisa_to_CDM(b,L_bar,H_0)
+    [Mabs, L_bar, b, H_0, omega_m_luisa] = all_parameters(theta, fixed_params, index)
+    omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
 
-    physical_params = [L_bar,b,H_0]
+    physical_params = [L_bar,b,H_0,omega_m_luisa]
     zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
