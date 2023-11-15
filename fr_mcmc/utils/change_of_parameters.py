@@ -14,10 +14,15 @@ def F_H(H, params):
     FH = H**2 + H**8 * lamb * L**6 * np.exp(lamb*(L*H)**4) -  H**2 * beta * np.exp(-beta*(L_bar*H)**8)
     return FH
 
-def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa=0.999916):
+def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa):
     factor = F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) / H0**2
     omega_cdm = omega_m_luisa * factor
     return omega_cdm
+
+def omega_CDM_to_luisa(beta, L_bar, H0, omega_lcdm):
+    factor_inv = H0**2 / F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) 
+    omega_luisa = omega_lcdm * factor_inv
+    return omega_luisa
 
 #%%
 if __name__ == '__main__':
@@ -26,13 +31,5 @@ if __name__ == '__main__':
     b_true = 2
     H_0=73.48
 
-    c1,c2 = physical_to_model_params_HS(omega_m_true, b_true,n=1)
-    print(c1,c2)
-
-    # c1_true = 1
-    # c2_true = 1/19
-    print(1/19)
-
-    #%%
     aux = c_luz_km**2 * omega_m_true / (7800 * (8315)**2 * (1-omega_m_true)) 
     print(aux)
