@@ -20,12 +20,12 @@ M_PRIOR: [-21, -18]
 L_BAR_PRIOR: [0.5, 1.5]
 B_PRIOR: [0, 15] #Only read if MODEL is 'HS' or 'EXP'
 H0_PRIOR: [60, 80]
-OMEGA_M_PRIOR: [0.99, 1]
+OMEGA_M_PRIOR: [0.1, 0.5]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 10, 70, 0.999916]
-BOUNDS: [[-21, -18], [0, 15], [50, 80], [0.99, 1]]
+GUEST: [-19.352, 10, 70, 0.3]
+BOUNDS: [[-21, -18], [0, 15], [50, 80], [0.1, 0.5]]
 
 ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
 

@@ -14,7 +14,7 @@ import git
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
-from change_of_parameters import omega_luisa_to_CDM
+from change_of_parameters import omega_CDM_to_luisa, omega_luisa_to_CDM
 from solve_sys import Hubble_th
 from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
@@ -125,7 +125,11 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_AGN = 0
     chi2_H0 =  0
 
+    #[Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
+    #omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,omega_m)
+
     [Mabs, L_bar, b, H_0, omega_m_luisa] = all_parameters(theta, fixed_params, index)
+    omega_m_luisa = 0.9999 + 10**(-5) * omega_m_luisa
     omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
 
     physical_params = [L_bar,b,H_0,omega_m_luisa]

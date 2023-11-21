@@ -44,6 +44,14 @@ def run():
     [H0_min, H0_max] = config.H0_PRIOR
     [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
 
+
+    #0.999916
+    #omega_m = 0.9999 + 10**(-6) * omega_m
+    omega_m_max = 0.9999 + 10**(-5) * omega_m_max
+    omega_m_min = 0.9999 + 10**(-5) * omega_m_min
+    
+    
+
     #%% Import cosmological data
     path_data = path_git + '/fr_mcmc/source/'
     datasets = []
@@ -204,8 +212,9 @@ def run():
         print('Calculating maximum likelihood parameters ..')
         initial = np.array(config.GUEST)
         soln = minimize(nll, initial, options = {'eps': 0.01}, bounds = bnds)
-
         np.savez(filename_ml, sol=soln.x)
+        
+        #np.savez(filename_ml, sol=initial)
         with np.load(filename_ml + '.npz') as data:
             sol = data['sol']
     print('Maximun likelihood corresponds to the parameters: {}'.format(sol))

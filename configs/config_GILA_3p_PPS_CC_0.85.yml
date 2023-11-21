@@ -9,7 +9,7 @@ USE_H0: False
 
 MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: 0.85
+FIXED_PARAMS: [0.85, 1.6]
 LOG_LIKELIHOOD_INDEX: 34 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 15000 #Maximum number of samples
@@ -20,6 +20,7 @@ M_PRIOR: [-21, -18]
 L_BAR_PRIOR: [0.5, 1.5]
 B_PRIOR: [0, 15] #Only read if MODEL is 'HS' or 'EXP'
 H0_PRIOR: [60, 80]
+OMEGA_M_PRIOR: [0.99995, 0.99997]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
