@@ -54,6 +54,12 @@ def run(filename):
     #if model == 'LCDM':
     reader = emcee.backends.HDFBackend(filename + '.h5')
     samples = reader.get_chain()
+    aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
+    samples[:,:,3] = aux
+    #print(samples[:,:,3])
+    #print(samples[:,0,0]) #1) Num de paso
+    #print(samples[0,:,0]) #2) Num de caminante
+    #print(samples[0,0,:]) #3) Num de parametro
     burnin= burnin=int(0.2*len(samples[:,0])); thin=1
     analisis = Plotter(reader, parameters_label, 'Titulo')
 

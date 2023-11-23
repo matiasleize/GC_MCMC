@@ -24,6 +24,9 @@ class Plotter:
 	def graficar_cadenas(self, num_chains = None):
 		'''Plot the chains for each parameter.'''
 		samples = self.sampler.get_chain()
+		aux = 0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
+		samples[:,:,3] = aux
+
 		len_chain,nwalkers,ndim=self.sampler.get_chain().shape
 		sns.set(style='darkgrid', palette="muted", color_codes=True)
 		sns.set_context("paper", font_scale=1.5, rc={"font.size":10,"axes.labelsize":17})
@@ -75,6 +78,8 @@ class Plotter:
 			flat_samples = self.sampler
 		else:
 			flat_samples = self.sampler.get_chain(discard=discard, flat=True, thin=thin)
+			aux = 0.9999 * flat_samples[:,3]/flat_samples[:,3] + flat_samples[:,3] * 10**(-5)
+			flat_samples[:,3] = aux
 		
 		names = [i.replace('$','') for i in self.labels]; 
 		ndim = len(self.labels)
@@ -105,6 +110,9 @@ class Plotter:
 			len_chain,ndim=samples.shape
 		else:
 			samples = self.sampler.get_chain(discard=discard, flat=True, thin=thin)
+			#print(samples)
+			aux =0.9999 * samples[:,3]/samples[:,3] + samples[:,3] * 10**(-5)
+			samples[:,3] = aux
 			len_chain, nwalkers, ndim = self.sampler.get_chain().shape
 
 		textfile_witness = open(save_path + '/intervals.dat','w')

@@ -49,6 +49,7 @@ def MCMC_sampler(log_probability, initial_values,
 	#%%
 	#Initialize the sampler
 	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, backend=backend)
+	
 
 	#sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, backend=backend,
 	#        moves=[(emcee.moves.DEMove(), 0.4), (emcee.moves.DESnookerMove(), 0.3)
@@ -62,7 +63,7 @@ def MCMC_sampler(log_probability, initial_values,
 		# Only check convergence every 'witness_freq' steps
 		if sampler.iteration % witness_freq: #'witness_freq' es cada cuanto chequea convergencia
 			continue
-			
+		#print(sampler.get_log_prob()) #Print para sacar el valor del posterior en cada paso
 		os.chdir(save_path)
 		textfile_witness = open(witness_file,'w')
 		textfile_witness.write('Iteration number: {} \t'.format(sampler.iteration))

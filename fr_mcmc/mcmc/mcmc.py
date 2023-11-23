@@ -7,7 +7,7 @@ Parameter order in this file: Mabs,L_bar,b,H_0,n
 import numpy as np; #np.random.seed(42)
 import emcee
 import yaml
-from scipy.optimize import minimize
+from scipy.optimize import minimize, basinhopping
 
 import os
 import git
@@ -47,10 +47,10 @@ def run():
 
     #0.999916
     #omega_m = 0.9999 + 10**(-6) * omega_m
-    omega_m_max = 0.9999 + 10**(-5) * omega_m_max
     omega_m_min = 0.9999 + 10**(-5) * omega_m_min
+    omega_m_max = 0.9999 + 10**(-5) * omega_m_max
     
-    
+    #print(omega_m_min,omega_m_max)
 
     #%% Import cosmological data
     path_data = path_git + '/fr_mcmc/source/'
@@ -149,7 +149,8 @@ def run():
                 return 0.0
         if index == 41:
             M, b, H0, omega_m = theta
-            if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max and  omega_m_min < omega_m < omega_m_max):
+            omega_m = 0.9999 + 10**(-5) * omega_m
+            if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
                 return 0.0
         elif index == 31:
             L_bar, b, H0 = theta
@@ -186,12 +187,15 @@ def run():
                 return 0.0
         return -np.inf
     
+    #print(log_prior([-19.298, 9.771, 71.887, 1.6]))
     # Define the posterior distribution
     def log_probability(theta):
         lp = log_prior(theta)
         if not np.isfinite(lp): # Maybe this condition is not necessary..
             return -np.inf
         return lp + ll(theta)
+        #print(lp)
+        #return ll(theta)
 
 
     filename = 'sample_' + model + datasets + '_' + str(num_params) + 'params'
@@ -211,20 +215,36 @@ def run():
     else:
         print('Calculating maximum likelihood parameters ..')
         initial = np.array(config.GUEST)
+        
         soln = minimize(nll, initial, options = {'eps': 0.01}, bounds = bnds)
+        
+        #minimizer_kwargs= dict(method='L-BFGS-B', bounds = bnds)
+        #soln = basinhopping(nll, initial, minimizer_kwargs=minimizer_kwargs)
         np.savez(filename_ml, sol=soln.x)
         
-        #np.savez(filename_ml, sol=initial)
+        #np.savez(filename_ml, sol=initial) #Use ansatz as minimun
         with np.load(filename_ml + '.npz') as data:
             sol = data['sol']
     print('Maximun likelihood corresponds to the parameters: {}'.format(sol))
 
-
     # Define initial values of each chain using the minimun 
-    # values of the chisquare.
+    # values of the chi square.
     pos = sol * (1 +  0.01 * np.random.randn(config.NUM_WALKERS, num_params))
-
     
+    #pos = sol * (1 + 0.000001*np.random.randn(config.NUM_WALKERS, num_params))    
+    #pos = sol * np.ones((config.NUM_WALKERS, num_params)) #Gives error
+
+    #sol = [-19.298, 9.771, 71.887, 0.3]
+    #pos = sol * np.ones((config.NUM_WALKERS, num_params))
+    #print(pos)
+    #pos = np.zeros((config.NUM_WALKERS, num_params))
+    #for i in range(config.NUM_WALKERS):
+    #    #Largarlo del valor medio de la corrida anterior con Omega_m
+    #    pos[i,:] = [-19.298, 9.771, 71.887, 0.3]
+    #print(pos)
+
+
+
     filename_h5 = filename + '.h5'
 
     MCMC_sampler(log_probability,pos, 

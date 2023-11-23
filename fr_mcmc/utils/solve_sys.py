@@ -18,7 +18,7 @@ from scipy.constants import c as c_light  # units of m/s
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-from change_of_parameters import F_H, omega_luisa_to_CDM
+from change_of_parameters import F_H#, omega_luisa_to_CDM
 
 c_light_km = c_light / 1000 # units of km/s
 path_git = git.Repo(".", search_parent_directories=True).working_tree_dir
@@ -74,6 +74,7 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
 
     [lamb, L, b, L_bar, H_0, omega_m_0] = params_ode
 
+
     #omega_m_0 = 0.999916 #omega_m_0 es el de Luisa
     omega_r_0 = 1 - omega_m_0
 
@@ -83,7 +84,7 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
         rho_crit_0 = H_0**2 / kappa        
     else:
         rho_crit_0 = F_H0 / kappa
-    
+    #print(omega_m_0,F_H0,rho_crit_0)
     a = 1/(1+z)
 
     rho_r = rho_crit_0 * omega_r_0 * a**(-4)
@@ -196,16 +197,16 @@ if __name__ == '__main__':
     #omega_m_luisa = 0.999916
     omega_m = 0.3
 
-    omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
+    #omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
 
-    physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
+    #physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
 
     #Inside the function integrator L_bar is divided by H0)
 
     # Plot Hubble diagrams for different models
     plt.figure()
     
-    plot_hubble_diagram(physical_params,hubble_th=False)
+    #plot_hubble_diagram(physical_params,hubble_th=False)
     
     #Plot LCDM Hubble parameter
     redshift_LCDM = np.linspace(0,3,int(10**5))

@@ -131,6 +131,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     [Mabs, L_bar, b, H_0, omega_m_luisa] = all_parameters(theta, fixed_params, index)
     omega_m_luisa = 0.9999 + 10**(-5) * omega_m_luisa
     omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
+    #print(omega_m_luisa)
 
     physical_params = [L_bar,b,H_0,omega_m_luisa]
     zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
@@ -222,14 +223,13 @@ def params_to_chi2(theta, fixed_params, index=0,
 
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
-
+    #print(chi2_SN + chi2_CC)
     return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_H0
 
 def log_likelihood(*args, **kargs):  
     '''
     Return the log likelihood in terms of the chi square.
     '''
-
     return -0.5 * params_to_chi2(*args, **kargs)
 
 #%%
