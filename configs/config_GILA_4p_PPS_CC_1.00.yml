@@ -12,20 +12,20 @@ WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number)
 FIXED_PARAMS: 1.00
 LOG_LIKELIHOOD_INDEX: 41 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
-MAX_SAMPLES: 15000 #Maximum number of samples
+MAX_SAMPLES: 5000 #Maximum number of samples
 WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 
 #For now only flat priors
 M_PRIOR: [-21, -18]
 L_BAR_PRIOR: [0.5, 1.5]
-B_PRIOR: [0, 15] #Only read if MODEL is 'HS' or 'EXP'
+B_PRIOR: [0, 10] #Only read if MODEL is 'HS' or 'EXP'
 H0_PRIOR: [60, 80]
-OMEGA_M_PRIOR: [0.1, 1.0]
+OMEGA_M_PRIOR: [-35000,10]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 10, 70, 0.5]
-BOUNDS: [[-21, -18], [0, 15], [50, 80], [0.1, 1.0]]
+GUEST: [-19.352, 1.1, 67, 1.6]
+BOUNDS: [[-21, -18], [0, 10], [60, 80], [-35000,10]]
 
 ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
 
