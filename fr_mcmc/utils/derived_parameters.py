@@ -21,16 +21,20 @@ def derived_parameters(sampler,discard, thin,model='EXP'):
 
 	L_bar = config.FIXED_PARAMS # Fixed parameters
 
-
 	flat_samples = sampler.get_chain(discard=discard, flat=True, thin=thin)
 	len_chain=flat_samples.shape[0]
 	new_samples = np.full_like(flat_samples,1)
 	for i in range(len_chain):
 		if len(flat_samples[0,:])==4:
+			M_abs = flat_samples[i,0]
 			beta = flat_samples[i,1]
 			H_0 = flat_samples[i,2]
 			omega_m_luisa = flat_samples[i,3]
 			aux = 0.9999 + 10**(-5) * omega_m_luisa
 			omega_m_lcdm = omega_luisa_to_CDM(beta,L_bar,H_0,aux)
+
+			new_samples[i,0] = M_abs
+			new_samples[i,1] = beta
+			new_samples[i,2] = H_0
 			new_samples[i,3] = omega_m_lcdm
 	return new_samples

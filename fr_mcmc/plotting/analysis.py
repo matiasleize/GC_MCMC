@@ -47,6 +47,8 @@ def parameters_labels(index):
 def run(filename):
     model = config.MODEL
     output_dir = config.OUTPUT_DIR
+    index = config.LOG_LIKELIHOOD_INDEX
+
     output_path = path_datos_global + output_dir + filename
     os.chdir(output_path)
 
@@ -54,21 +56,15 @@ def run(filename):
     #if model == 'LCDM':
     reader = emcee.backends.HDFBackend(filename + '.h5')
     samples = reader.get_chain()
-    aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
-    samples[:,:,3] = aux
-    #print(samples[:,:,3])
-    #print(samples[:,0,0]) #1) Num de paso
-    #print(samples[0,:,0]) #2) Num de caminante
-    #print(samples[0,0,:]) #3) Num de parametro
+    if index == 41:
+        aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
+        samples[:,:,3] = aux
+        #print(samples[:,:,3])
+        #print(samples[:,0,0]) #1) Num de paso
+        #print(samples[0,:,0]) #2) Num de caminante
+        #print(samples[0,0,:]) #3) Num de parametro
     burnin= burnin=int(0.2*len(samples[:,0])); thin=1
     analisis = Plotter(reader, parameters_label, 'Titulo')
-
-    #else:    
-    #    with np.load(filename + '_deriv.npz') as data:
-    #        ns = data['new_samples']
-    #    analisis = Plotter(ns, parameters_label, '')
-    #    burnin = 0 # already has the burnin
-    #    thin = 1
 
     results_dir = '/results'
     if not os.path.exists(output_path + results_dir):
@@ -77,15 +73,30 @@ def run(filename):
     analisis.graficar_contornos(discard=burnin, thin=thin)
     plt.savefig(output_path + results_dir + '/cornerplot.png')
     plt.close()
-
-    #if model == 'LCDM':
     analisis.graficar_cadenas()
-    #else:
-    #    analisis.graficar_cadenas_derivs()
+
+
+    if index == 41:
+        with np.load(filename + '_deriv.npz') as data:
+            ns = data['new_samples']
+        analisis = Plotter(ns, parameters_label, '')
+        burnin = 0 # already has the burnin
+        thin = 1
+
+        results_dir = '/results_derivs'
+        if not os.path.exists(output_path + results_dir):
+                os.mkdir(output_path + results_dir)
+    
+        analisis.graficar_contornos(discard=burnin, thin=thin)
+        plt.savefig(output_path + results_dir + '/cornerplot.png')
+        plt.close()
+        analisis.graficar_cadenas_derivs()
+        
     plt.savefig(output_path + results_dir + '/chains.png')
     plt.close()
-    analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
 
+
+    analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
     textfile_witness = open(output_path + results_dir + '/metadata.dat','w')
     textfile_witness.write('{}'.format(config))
 

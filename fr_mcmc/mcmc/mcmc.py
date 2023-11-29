@@ -255,38 +255,39 @@ def run():
                 save_path = output_directory)
 
     # If it corresponds, derive physical parameters
-    #if model != 'LCDM':
-    #    os.chdir(output_directory)
-    #
-    #    textfile_witness = open(witness_file,'a')
-    #    textfile_witness.write('\n Initializing derivation of parameters..')
-    #    textfile_witness.close()
+    if index == 41:
+        os.chdir(output_directory)
+ 
+        textfile_witness = open(witness_file,'a')
+        textfile_witness.write('\n Initializing derivation of parameters..')
+        textfile_witness.close()
 
-    #    reader = emcee.backends.HDFBackend(filename_h5)
-    #    nwalkers, ndim = reader.shape #Number of walkers and parameters
+        reader = emcee.backends.HDFBackend(filename_h5)
+        nwalkers, ndim = reader.shape #Number of walkers and parameters
 
-    #    # Hardcode definition of burnin and thin
-    #    samples = reader.get_chain()
-    #    burnin= int(0.2*len(samples[:,0])) # Burnin 20% 
-    #    thin = 1
+        # Hardcode definition of burnin and thin
+        samples = reader.get_chain()
+        burnin= int(0.2*len(samples[:,0])) # Burnin 20% 
+        thin = 1
 
-    #    samples = reader.get_chain(discard=burnin, flat=True, thin=thin)
+        samples = reader.get_chain(discard=burnin, flat=True, thin=thin)
 
-    #    textfile_witness = open(witness_file,'a')
-    #    textfile_witness.write('\n Number of effective steps: {}'.format(len(samples))) 
-    #    textfile_witness.write(('\n Estimated time: {} min'.format(len(samples)/60)))
-    #    textfile_witness.close()
+        textfile_witness = open(witness_file,'a')
+        textfile_witness.write('\n Number of effective steps: {}'.format(len(samples))) 
+        textfile_witness.write(('\n Estimated time: {} min'.format(len(samples)/60)))
+        textfile_witness.close()
 
-    #    new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
-    #    np.savez(filename+'_deriv', new_samples=new_samples)
+        new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
+        np.savez(filename+'_deriv', new_samples=new_samples)
 
-    #    textfile_witness = open(witness_file,'a')
-    #    textfile_witness.write('\n Done!')
-    #    textfile_witness.close()
+        textfile_witness = open(witness_file,'a')
+        textfile_witness.write('\n Done!')
+        textfile_witness.close()
 
         # Print the output
-    #    with np.load(filename+'_deriv.npz') as data:
-    #        ns = data['new_samples']
+        with np.load(filename+'_deriv.npz') as data:
+            ns = data['new_samples']
+
         
 
     # Plot the results
