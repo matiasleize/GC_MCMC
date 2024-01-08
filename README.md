@@ -1,5 +1,3 @@
-# GILA_MCMC
-
 # GILA model statistical analysis
 Author: Matías Leizerovich. Faculty of Exact and Natural Sciences, Buenos Aires University.
 
