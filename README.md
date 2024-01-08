@@ -1,16 +1,16 @@
-# luisa_MCMC
+# GILA_MCMC
 
-# $f(R)$ models statistical analysis
+# GILA model statistical analysis
 Author: Matías Leizerovich. Faculty of Exact and Natural Sciences, Buenos Aires University.
 
-For download, see https://github.com/matiasleize/fR-luisa
+For download, see https://github.com/matiasleize/GILA_MCMC
 
-You can use fR-luisa freely, provided that in your publications you cite the paper mentioned.
+You can use GILA_MCMC freely, provided that in your publications you cite the paper mentioned.
 
 ## Create a virtual environment
 In order to create a virtual environment with the libraries that are needed to run this module, follow the next steps:
 * Clone the repository: ``` git clone``` 
-* Enter the directory: ```cd fR-luisa```
+* Enter the directory: ```cd GILA_MCMC```
 * Create the virtual environment: ```conda env create``` 
 * Activate the virtual environment: ```source activate fR-MCMC```
 
