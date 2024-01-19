@@ -41,7 +41,9 @@ def F_H_prime(H, params):
     lamb, L, beta, L_bar = params
     #FH_prime = 2 * H #Caso LCDM
     #aux = 2 * lamb * L**6 * (lamb * (L*H)**4 + 2) * np.exp(lamb*(L*H)**4) + beta * L_bar**6 * (beta*(L_bar*H)**2 - 4) * np.exp(- beta*(L_bar*H)**2)
-    aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**2)*(beta-4*beta**2*(L*H)**8)
+    #aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**2)*(beta-4*beta**2*(L*H)**8) #WITH BUGS!
+    
+    aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**8)*(beta-4*beta**2*(L_bar*H)**8)
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
 
@@ -158,12 +160,7 @@ def Hubble_th(physical_params, *args,
 
     zs, Hs = integrator([L_bar, b, H0,omega_m_luisa])  
     return zs, Hs   
-    omega_m_true = 0.24
-    b_true = 2
-    H_0=73.48
 
-    aux = c_luz_km**2 * omega_m_true / (7800 * (8315)**2 * (1-omega_m_true)) 
-    print(aux)
 #%%   
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
