@@ -9,7 +9,7 @@ USE_H0: False
 
 MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: 0.85
+FIXED_PARAMS: 0.80
 LOG_LIKELIHOOD_INDEX: 41 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 20000 #Maximum number of samples
@@ -24,13 +24,13 @@ OMEGA_M_PRIOR: [-35000,10]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 10, 70, 1.6]
-BOUNDS: [[-21, -18], [0, 15], [60, 80], [-35000,10]]
+GUEST: [-19.2, 1, 74, 1.6]
+BOUNDS: [[-21, -18], [0, 15], [73, 75], [-35000,10]]
 
 ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
 
 #Directory in which output files are stored
-OUTPUT_DIR: '/GILA-output/L=0.85/'
+OUTPUT_DIR: '/GILA-output/L=0.80/'
 
 #Other things that are not in use:
 #DATA_PATH: './data'

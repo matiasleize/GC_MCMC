@@ -12,7 +12,7 @@ WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number)
 FIXED_PARAMS: 0.90
 LOG_LIKELIHOOD_INDEX: 41 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
-MAX_SAMPLES: 5000 #Maximum number of samples
+MAX_SAMPLES: 20000 #Maximum number of samples
 WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 
 #For now only flat priors
