@@ -8,8 +8,8 @@ from scipy.integrate import cumtrapz as cumtrapz
 from scipy.integrate import simps as simps
 from scipy.integrate import quad as quad
 
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light / 1000 # units of km/s
 
 import os
 import git
@@ -18,6 +18,13 @@ path_datos_global = os.path.dirname(path_git)
 os.chdir(path_git)
 os.sys.path.append('./fr_mcmc/utils/')
 from LambdaCDM import H_LCDM_rad
+
+from scipy.integrate import solve_ivp
+from scipy.interpolate import interp1d
+
+from change_of_parameters import F_H#, omega_luisa_to_CDM
+
+
 
 #Parameters order: omega_m,b,H_0,n
 
@@ -44,7 +51,7 @@ def r_drag_viejo(omega_m,H_0,wb = 0.0225, int_z=True): #wb x default tomo el de 
     zs_int_log = np.logspace(np.log10(zd),13,int(10**5))
     H_int_log = H_LCDM_rad(zs_int_log,omega_m,H_0)
 
-    integrando_log = c_luz_km / (H_int_log * np.sqrt(3*(1 + R_bar*(1+zs_int_log)**(-1))))
+    integrando_log = c_light_km / (H_int_log * np.sqrt(3*(1 + R_bar*(1+zs_int_log)**(-1))))
 
     rd_log = simps(integrando_log,zs_int_log)
     return rd_log
@@ -56,7 +63,7 @@ def integrand(z, Om_m_0, H_0, wb):
     Om_r = 4.18343*10**(-5) / (H_0/100)**2
     Om_Lambda = 1 - Om_m_0 - Om_r
     H = H_0 * ((Om_r * (1 + z)**4 + Om_m_0 * (1 + z)**3 + Om_Lambda) ** (1/2))
-    return c_luz_km/(H * (3*(1 + R_bar*(1+z)**(-1)))**(1/2))
+    return c_light_km/(H * (3*(1 + R_bar*(1+z)**(-1)))**(1/2))
 
 
 def r_drag(omega_m,H_0,wb = 0.0225, int_z=True): #wb of BBN as default.
@@ -81,21 +88,21 @@ def Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpolado, z_data, index):
         output = Hs_interpolado(z_data)
 
     elif index == 1: #DH
-        output = c_luz_km * (Hs_interpolado(z_data))**(-1)
+        output = c_light_km * (Hs_interpolado(z_data))**(-1)
 
     else:
         INT = int_inv_Hs_interpolado(z_data)
 
         if index == 0: #DA
-            output = (c_luz_km/(1 + z_data)) * INT
+            output = (c_light_km/(1 + z_data)) * INT
 
         elif index == 2: #DM
             #output = (1 + z_data) * DA
-            output = c_luz_km * INT
+            output = c_light_km * INT
 
         elif index == 3: #DV
-            #output = (((1 +z_data) * DA)**2 * c_luz_km * z_data * (Hs**(-1))) ** (1/3)
-            output = c_luz_km * (INT**2 * z_data * (Hs_interpolado(z_data)**(-1))) ** (1/3)
+            #output = (((1 +z_data) * DA)**2 * c_light_km * z_data * (Hs**(-1))) ** (1/3)
+            output = c_light_km * (INT**2 * z_data * (Hs_interpolado(z_data)**(-1))) ** (1/3)
 
     return output
 

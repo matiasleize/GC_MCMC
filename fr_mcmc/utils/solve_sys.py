@@ -1,3 +1,4 @@
+#%%
 '''
 Integration of the ODE for the different cosmological models. For the Hu-Sawicki model
 we use De la Cruz et al. ODE. Besides, for the Exponential model we use the Odintsov ODE.
@@ -28,22 +29,10 @@ os.sys.path.append("./fr_mcmc/utils/")
 from LambdaCDM import H_LCDM
 
 #%%
-'''
 def F_H_prime(H, params):
     lamb, L, beta, L_bar = params
-    #FH_prime = 2 * H #Caso LCDM
-    aux = 2 * lamb * L**6 * (lamb * (L*H)**4 + 2) * np.exp(lamb*(L*H)**4) + beta * L_bar**6 * (beta*(L_bar*H)**2 - 4) * np.exp(- beta*(L_bar*H)**2)
-    FH_prime = 2 * H * (1 + H**6 * aux) 
-    return FH_prime
-'''
-
-def F_H_prime(H, params):
-    lamb, L, beta, L_bar = params
-    #FH_prime = 2 * H #Caso LCDM
-    #aux = 2 * lamb * L**6 * (lamb * (L*H)**4 + 2) * np.exp(lamb*(L*H)**4) + beta * L_bar**6 * (beta*(L_bar*H)**2 - 4) * np.exp(- beta*(L_bar*H)**2)
-    #aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**2)*(beta-4*beta**2*(L*H)**8) #WITH BUGS!
-    
-    aux = np.exp(lamb*(L*H)**4) * (4 * lamb*(L*H)**6 + 2 * lamb**2 * (L*H)**10) - np.exp(- beta*(L_bar*H)**8)*(beta-4*beta**2*(L_bar*H)**8)
+    aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 - 5 * beta * (L_bar*H)**10) +\
+          np.exp(lamb*(L*H)**2) * lamb * (L*H)**6 * (4 + lamb*(L*H)**2)
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
 
@@ -188,13 +177,14 @@ if __name__ == '__main__':
 
 
     # Set physical parameters
-    H_0 = 73
-    L_bar = 0.98 # In units of H0
-    b = 0.5
-    #omega_m_luisa = 0.999916
-    omega_m = 0.3
+    H_0 = 70
+    L_bar = 1.4 # In units of H0
+    b = 0.3
+    omega_m_luisa = 0.999916
+    #omega_m = 0.3
 
-    #omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
+    from change_of_parameters import omega_luisa_to_CDM
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
 
     #physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
 
@@ -203,7 +193,9 @@ if __name__ == '__main__':
     # Plot Hubble diagrams for different models
     plt.figure()
     
-    #plot_hubble_diagram(physical_params,hubble_th=False)
+    physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
+
+    plot_hubble_diagram(physical_params,hubble_th=False)
     
     #Plot LCDM Hubble parameter
     redshift_LCDM = np.linspace(0,3,int(10**5))
@@ -216,3 +208,4 @@ if __name__ == '__main__':
     plt.legend(loc='best')
     plt.grid(True)
     plt.show()
+# %%
