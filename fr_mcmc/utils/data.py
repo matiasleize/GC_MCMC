@@ -130,6 +130,25 @@ def read_data_BAO(file_BAO):
     total_errors_cuad = errors_est**2 + errors_sist**2
     return z, data_values, total_errors_cuad, wb_fid
 
+def read_data_DESI(file_DESI_1, file_DESI_2):
+    # Read text with data
+    z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 = np.loadtxt(file_DESI_1,
+                                                                     usecols=(0,1,2,3,4,5,6),
+                                                                     skiprows=1, unpack=True)
+    covariance = rho * errors_dm_rd * errors_dh_rd
+    Ccov = np.array([[errors_dm_rd**2, covariance],[covariance, errors_dm_rd**2]])
+    Cinv=inv(Ccov)
+    set_1 = z_eff_1, data_dm_rd, data_dh_rd, Cinv, wb_fid_1 
+
+    # Read text with data
+    z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = np.loadtxt(file_DESI_2,
+                                                usecols=(0,1,2,3),
+                                                skiprows=1, unpack=True)
+    set_2 = z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 
+
+    return [set_1, set_2]
+
+
 def read_data_AGN(file_AGN):
     z, Fuv, eFuv, Fx, eFx = np.loadtxt(file_AGN,
     usecols=(3,4,5,6,7), unpack=True)
