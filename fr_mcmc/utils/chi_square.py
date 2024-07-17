@@ -94,7 +94,7 @@ def all_parameters(theta, fixed_params, index):
 def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
                    dataset_SN=None, dataset_CC=None,
-                   dataset_BAO=None, dataset_AGN=None, H0_Riess=False,
+                   dataset_BAO=None, dataset_DESI=None, dataset_AGN=None, H0_Riess=False,
                    num_z_points=int(10**5), model='HS',n=1,
                    nuisance_2 = False, enlarged_errors=False,
                    all_analytic=False):
@@ -108,6 +108,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     dataset_SN:
     dataset_CC:
     dataset_BAO: This data goes up to z=7.4 aproximately. Don't integrate with z less than that!
+    dataset_DESI:
     dataset_AGN:
     H0_Riess:
 
@@ -122,6 +123,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_SN = 0
     chi2_CC = 0
     chi2_BAO = 0
+    chi2_DESI = 0
     chi2_AGN = 0
     chi2_H0 =  0
 
@@ -138,7 +140,7 @@ def params_to_chi2(theta, fixed_params, index=0,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
 
-    if (dataset_CC != None or dataset_BAO != None or dataset_AGN != None):
+    if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
 
     #if (dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
@@ -193,6 +195,48 @@ def params_to_chi2(theta, fixed_params, index=0,
 
         chi2_BAO = np.sum(chies_BAO)
 
+    if dataset_DESI != None:
+        num_datasets=5
+        chies_DESI = np.zeros(num_datasets)
+
+        (set_1, set_2) = dataset_DESI
+        z_eff_1, data_dm_rd, data_dh_rd, Cinv, wb_fid_1 = set_1 
+        z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = set_2
+
+    
+        #index: 1 (DH)
+        #index: 2 (DM)
+        #index: 3 (DV)
+
+        #DM_DH
+
+        output_th_dh = np.zeros(len(z_eff_1))
+        output_th_dm = np.zeros(len(z_eff_1))
+
+        for j in range(len(output_th_dh)): # For each datatype
+            rd = r_drag(omega_m, H_0, wb_fid_1) #rd calculation
+
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1, 1)
+            output_th_dh[j] = Ds_to_obs_final(zs_model, aux, rd, 1)
+
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1, 2)
+            output_th_dm[j] = Ds_to_obs_final(zs_model, aux, rd, 2)
+
+        #DV
+        output_th_dv = np.zeros(len(z_eff_2))
+        for j in range(len(z_eff_2)): # For each datatype
+            rd = r_drag(omega_m, H_0, wb_fid_2) #rd calculation
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2, 3)
+            output_th_dv[j] = Ds_to_obs_final(zs_model, aux, rd, 3)
+            
+        #Chi square calculation for each datatype (i)
+
+        # ARREGLAR ESTO: Es algo nuevo, no puedo separar el chi2 de Dh y Dm por la covarianza, como lo escribo??
+        #chies_DESI_1 = chi2_sin_cov(output_th_dv,data_dv_rd,errors_dv_rd) 
+        
+        chies_DESI_2 = chi2_supernovae(muth, muobs, Cinv)
+        chies_DESI = chies_DESI_1 + chies_DESI_2
+        return chies_DESI
 
     if dataset_AGN != None:
         z_data, logFuv, eFuv, logFx, eFx  = dataset_AGN #Import the data
