@@ -18,7 +18,7 @@ path_datos_global = os.path.dirname(path_git)
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/')
 from utils.sampling import MCMC_sampler
 from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, read_data_pantheon,\
-                       read_data_chronometers, read_data_BAO, read_data_AGN
+                       read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
 from config import cfg as config
@@ -104,6 +104,20 @@ def run():
     else:
         ds_BAO = None
 
+
+    # DESI
+    if config.USE_DESI == True:    
+        os.chdir(path_data + 'DESI/')
+        ds_DESI = []
+        archivos_DESI = ['DESI_data_dh_dm.txt','DESI_data_dv.txt']
+        for i in range(5):
+            aux = read_data_DESI(archivos_DESI[i])
+            ds_DESI.append(aux)
+        datasets.append('_DESI')
+    else:
+        ds_DESI = None
+
+
     # AGN
     if config.USE_AGN == True:
         os.chdir(path_data + 'AGN/')
@@ -129,6 +143,7 @@ def run():
                                         dataset_SN = ds_SN,
                                         dataset_CC = ds_CC,
                                         dataset_BAO = ds_BAO,
+                                        dataset_DESI = ds_DESI,
                                         dataset_AGN = ds_AGN,
                                         H0_Riess = H0_Riess,
                                         model = model,
