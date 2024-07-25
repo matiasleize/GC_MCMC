@@ -178,13 +178,13 @@ def params_to_chi2(theta, fixed_params, index=0,
             if i==0: #Da entry
                 rd = r_drag(omega_m,H_0,wb_fid) # rd calculation
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
-                output_th = Ds_to_obs_final(zs_model, distancias_teoricas, rd, i)
+                output_th = Ds_to_obs_final(distancias_teoricas, rd, i)
             else: #If not..
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
                      rd = r_drag(omega_m,H_0,wb_fid[j]) #rd calculation
-                     output_th[j] = Ds_to_obs_final(zs_model,distancias_teoricas[j],rd,i)
+                     output_th[j] = Ds_to_obs_final(distancias_teoricas[j],rd,i)
             #Chi square calculation for each datatype (i)
             chies_BAO[i] = chi2_sin_cov(output_th,valores_data,errores_data_cuad)
 
@@ -196,47 +196,52 @@ def params_to_chi2(theta, fixed_params, index=0,
         chi2_BAO = np.sum(chies_BAO)
 
     if dataset_DESI != None:
-        num_datasets=5
-        chies_DESI = np.zeros(num_datasets)
 
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dm_rd, data_dh_rd, Cinv, wb_fid_1 = set_1 
+        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 = set_1 
         z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = set_2
 
-    
         #index: 1 (DH)
         #index: 2 (DM)
         #index: 3 (DV)
 
         #DM_DH
 
-        output_th_dh = np.zeros(len(z_eff_1))
-        output_th_dm = np.zeros(len(z_eff_1))
+        chi2_dm_dh = np.zeros(len(z_eff_1))
 
-        for j in range(len(output_th_dh)): # For each datatype
+        for j in range(len(z_eff_1)): # For each datatype
             rd = r_drag(omega_m, H_0, wb_fid_1) #rd calculation
 
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1, 1)
-            output_th_dh[j] = Ds_to_obs_final(zs_model, aux, rd, 1)
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 1)
+            dh_th = Ds_to_obs_final(aux, rd, 1) # dh/rd
 
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1, 2)
-            output_th_dm[j] = Ds_to_obs_final(zs_model, aux, rd, 2)
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 2)
+            dm_th = Ds_to_obs_final(aux, rd, 2) # dm/rd
+
+            delta_dm = dm_th - data_dm_rd[j]
+            delta_dh = dh_th - data_dh_rd[j]
+
+            Cov_mat = np.array([errors_dm_rd[j]**2, errors_dm_rd[j]*errors_dm_rd[j]*rho[j]],[errors_dm_rd[j]*errors_dm_rd[j]*rho[j], errors_dh_rd[j]**2])
+            C_inv = np.linalg.inv(Cov_mat)
+
+            delta = np.array([delta_dm, delta_dh]) #row vector
+            transp = np.transpose(delta) #column vector
+            aux_chi = np.dot(C_inv, transp) #column vector
+            chi2_dm_dh[j] = np.dot(aux_chi, aux) #scalar
+
+        chi2_DESI_1 = np.sum(chi2_dm_dh)
 
         #DV
-        output_th_dv = np.zeros(len(z_eff_2))
+        dv_th_rd = np.zeros(len(z_eff_2))
         for j in range(len(z_eff_2)): # For each datatype
             rd = r_drag(omega_m, H_0, wb_fid_2) #rd calculation
             aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2, 3)
-            output_th_dv[j] = Ds_to_obs_final(zs_model, aux, rd, 3)
-            
-        #Chi square calculation for each datatype (i)
+            dv_th_rd[j] = Ds_to_obs_final(aux, rd, 3) # dv/rd
 
-        # ARREGLAR ESTO: Es algo nuevo, no puedo separar el chi2 de Dh y Dm por la covarianza, como lo escribo??
-        #chies_DESI_1 = chi2_sin_cov(output_th_dv,data_dv_rd,errors_dv_rd) 
-        
-        chies_DESI_2 = chi2_supernovae(muth, muobs, Cinv)
-        chies_DESI = chies_DESI_1 + chies_DESI_2
-        return chies_DESI
+        #Chi square calculation for each datatype (i)
+        chi2_DESI_2 = chi2_sin_cov(dv_th_rd, data_dv_rd, errors_dv_rd**2)
+
+        chi2_DESI = chi2_DESI_1 + chi2_DESI_2
 
     if dataset_AGN != None:
         z_data, logFuv, eFuv, logFx, eFx  = dataset_AGN #Import the data
@@ -268,7 +273,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
     #print(chi2_SN + chi2_CC)
-    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_H0
+    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0
 
 def log_likelihood(*args, **kargs):  
     '''
