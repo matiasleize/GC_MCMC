@@ -135,10 +135,7 @@ def read_data_DESI(file_DESI_1, file_DESI_2):
     z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 = np.loadtxt(file_DESI_1,
                                                                      usecols=(0,1,2,3,4,5,6),
                                                                      skiprows=1, unpack=True)
-    covariance = rho * errors_dm_rd * errors_dh_rd
-    Ccov = np.array([[errors_dm_rd**2, covariance],[covariance, errors_dm_rd**2]])
-    Cinv=inv(Ccov)
-    set_1 = z_eff_1, data_dm_rd, data_dh_rd, Cinv, wb_fid_1 
+    set_1 = z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 
 
     # Read text with data
     z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = np.loadtxt(file_DESI_2,
