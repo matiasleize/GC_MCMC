@@ -15,7 +15,7 @@ path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 from change_of_parameters import omega_CDM_to_luisa, omega_luisa_to_CDM
-from solve_sys import Hubble_th
+from solve_sys import Hubble_th, F_H_prime
 from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
 from AGN import zs_2_logDlH0
@@ -135,10 +135,24 @@ def params_to_chi2(theta, fixed_params, index=0,
     omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
     #print(omega_m_luisa)
 
+    '''
+    eps = 0.0001
+    F_prime = F_H_prime(H_0, [0, 0.1, b, L_bar])
+    if np.abs(F_prime) < eps:
+        return -np.inf
+    '''
     physical_params = [L_bar,b,H_0,omega_m_luisa]
     zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
+    
+    
+    eps = 10**(-5)
+    F_prime = F_H_prime(Hs_model, [0, 0.1, b, L_bar])
+    #print(np.abs(F_prime) < eps)
+    if not np.any(np.abs(F_prime) < eps):
+        return -np.inf
+    
 
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
@@ -196,10 +210,12 @@ def params_to_chi2(theta, fixed_params, index=0,
         chi2_BAO = np.sum(chies_BAO)
 
     if dataset_DESI != None:
+        wb_fid = 0.0224 #OJO ACA
+        rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
 
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 = set_1 
-        z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = set_2
+        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = set_1 
+        z_eff_2, data_dv_rd, errors_dv_rd = set_2
 
         #index: 1 (DH)
         #index: 2 (DM)
@@ -210,7 +226,6 @@ def params_to_chi2(theta, fixed_params, index=0,
         chi2_dm_dh = np.zeros(len(z_eff_1))
 
         for j in range(len(z_eff_1)): # For each datatype
-            rd = r_drag(omega_m, H_0, wb_fid_1) #rd calculation
 
             aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 1)
             dh_th = Ds_to_obs_final(aux, rd, 1) # dh/rd
@@ -234,7 +249,6 @@ def params_to_chi2(theta, fixed_params, index=0,
         #DV
         dv_th_rd = np.zeros(len(z_eff_2))
         for j in range(len(z_eff_2)): # For each datatype
-            rd = r_drag(omega_m, H_0, wb_fid_2) #rd calculation
             aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2, 3)
             dv_th_rd[j] = Ds_to_obs_final(aux, rd, 3) # dv/rd
 
@@ -314,6 +328,14 @@ if __name__ == '__main__':
     files_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
                     'BAO_data_dv.txt','BAO_data_H.txt']
     for i in range(5):
+        aux = read_data_BAO(files_BAO[i])
+        ds_BAO.append(aux)
+
+    # DESI
+    os.chdir(path_git+'/fr_mcmc/source/DESI/')
+    ds_BAO = []
+    files_BAO = ['BAO_data_dh_dm.txt','BAO_data_dv.txt']
+    for i in range(2):
         aux = read_data_BAO(files_BAO[i])
         ds_BAO.append(aux)
 
