@@ -19,7 +19,7 @@ from scipy.constants import c as c_light  # units of m/s
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-from change_of_parameters import F_H#, omega_luisa_to_CDM
+from change_of_parameters import F_H #, omega_luisa_to_CDM
 
 c_light_km = c_light / 1000 # units of km/s
 path_git = git.Repo(".", search_parent_directories=True).working_tree_dir
@@ -31,7 +31,7 @@ from LambdaCDM import H_LCDM
 #%%
 def F_H_prime(H, params):
     lamb, L, beta, L_bar = params
-    aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 - 5 * beta * (L_bar*H)**10) +\
+    aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 + 5 * beta * (L_bar*H)**10) +\
           np.exp(lamb*(L*H)**2) * lamb * (L*H)**6 * (4 + lamb*(L*H)**2)
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
@@ -85,6 +85,8 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
 
     # To integrate in z
     s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar]))     
+    #print(F_H_prime(Hubble, [lamb, L, b, L_bar]))
+    #print(3 * kappa * (rho_tot + p_tot/c_light_km**2))
     #print(s)
     return s
 
