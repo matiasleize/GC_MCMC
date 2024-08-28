@@ -147,12 +147,13 @@ def params_to_chi2(theta, fixed_params, index=0,
                                 all_analytic=all_analytic)
     
     
+    '''
     eps = 10**(-5)
     F_prime = F_H_prime(Hs_model, [0, 0.1, b, L_bar])
     #print(np.abs(F_prime) < eps)
     if not np.any(np.abs(F_prime) < eps):
         return -np.inf
-    
+    '''
 
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
