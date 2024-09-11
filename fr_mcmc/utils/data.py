@@ -23,8 +23,16 @@ def read_data_pantheon_plus_shoes(file_pantheon_plus,file_pantheon_plus_shoes_co
     zhd = df['zHD']
     zhel = df['zHEL']
     mb = df['m_b_corr']
-    mu_shoes = df['MU_SH0ES']
+    mu_shoes = df['CEPH_DIST'] #FIXED BUG, before it read: 'mu_shoes = df['MU_SH0ES']' which was wrong!
     is_cal = df['IS_CALIBRATOR']
+
+    #################################################################################+
+    # NEW for PPS: We mask the data with zHD<0.01 and IS_CALIBRATOR==False
+    ww = (data['zHD']>0.01) | (np.array(data['IS_CALIBRATOR'],dtype=bool))
+    zhd = data['zHD'][ww]
+    zhel = data['zHEL'][ww]
+    mb = data['m_b_corr'][ww]
+    #################################################################################
     
     #Load the covariance matrix elements
     Ccov=np.loadtxt(file_pantheon_plus_shoes_cov,unpack=True)
