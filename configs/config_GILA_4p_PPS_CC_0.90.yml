@@ -31,7 +31,7 @@ BOUNDS: [[-21, -18], [0, 10], [55, 80], [-35000,10]]
 ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
 
 #Directory in which output files are stored
-OUTPUT_DIR: '/GILA-output/L=0.90/'
+OUTPUT_DIR: '/GILA-output/L=0.90/beta_model/flat_prior/'
 
 #Other things that are not in use:
 #DATA_PATH: './data'

@@ -13,6 +13,8 @@ os.chdir(path_git + '/configs/')
 
 #Here you have to specify the the name of your .yml file
 
+#yml_file = 'config.yml'
+
 #yml_file = 'config_GILA_4p_PPS_CC_0.75.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_0.80.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_0.85.yml'
