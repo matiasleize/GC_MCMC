@@ -8,20 +8,22 @@ c_luz_km = c_luz/1000
 
 # Parameters order: omega_m, b, H_0, n
 
+#GILA model
 '''
-def F_H(H, params):     
-    lamb, L, beta, L_bar = params
-    #FH = H**2 #Caso LCDM
-    #FH = H**2 + H**8 * (lamb * L**6 * np.exp(lamb*(L*H)**4) - beta * L_bar**6 * np.exp(-beta*(L_bar*H)**2))
-    FH = H**2 + H**8 * lamb * L**6 * np.exp(lamb*(L*H)**4) -  H**2 * beta * np.exp(-beta*(L_bar*H)**8)
-    return FH
-'''
-
 def F_H(H, params):     
     lamb, L, beta, L_bar = params
     FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**10) \
               + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**2)
     return FH
+'''
+
+#Beta model
+def F_H(H, params):     
+    lamb, L, beta, L_bar = params
+    FH = H**2 - H**2        * beta * np.exp(-beta*(L_bar*H)**8) \
+              + H**8 * L**6 * lamb * np.exp(lamb*(L*H)**4)
+    return FH
+
 
 def omega_luisa_to_CDM(beta, L_bar, H0, omega_m_luisa):
     factor = F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) / H0**2

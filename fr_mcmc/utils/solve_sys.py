@@ -29,10 +29,16 @@ os.sys.path.append("./fr_mcmc/utils/")
 from LambdaCDM import H_LCDM
 
 #%%
-def F_H_prime(H, params):
+def F_H_prime(H, params, model='BETA'):
     lamb, L, beta, L_bar = params
-    aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 + 5 * beta * (L_bar*H)**10) +\
-          np.exp(lamb*(L*H)**2) * lamb * (L*H)**6 * (4 + lamb*(L*H)**2)
+
+    if model == 'GILA':
+        aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 + 5 * beta * (L_bar*H)**10) +\
+                np.exp(lamb*(L*H)**2) * lamb * (L*H)**6 * (4 + lamb*(L*H)**2)
+    if model == 'BETA':
+        aux = np.exp(-beta*(L_bar*H)**8)  * beta                * (-1 + 4 * beta * (L_bar*H)**8) +\
+            2 * np.exp(lamb*(L*H)**4) * lamb * (L*H)**6 * (2 + lamb*(L*H)**4)
+
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
 

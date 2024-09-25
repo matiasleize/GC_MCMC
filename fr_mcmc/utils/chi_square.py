@@ -135,6 +135,21 @@ def params_to_chi2(theta, fixed_params, index=0,
     omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
     #print(omega_m_luisa)
 
+    
+    #Flat prior on omega_m
+
+    if not 0.27 < omega_m < 0.36:
+        return -np.inf
+    
+
+    gaussian_prior = 0
+    '''
+    #Gaussian prior on omega_m
+    mu = 0.32
+    sigma = 0.05
+    gaussian_prior = np.log(1.0/(np.sqrt(2*np.pi)*sigma))-0.5*(omega_m-mu)**2/sigma**2
+    '''
+
     '''
     eps = 0.0001
     F_prime = F_H_prime(H_0, [0, 0.1, b, L_bar])
@@ -288,7 +303,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
     #print(chi2_SN + chi2_CC)
-    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0
+    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0 + gaussian_prior
 
 def log_likelihood(*args, **kargs):  
     '''
