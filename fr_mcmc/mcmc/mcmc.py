@@ -21,6 +21,8 @@ from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, r
                        read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
+from utils.change_of_parameters import omega_CDM_to_luisa
+
 from config import cfg as config
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/plotting/')
 import analysis
@@ -47,8 +49,9 @@ def run():
 
     #0.999916
     #omega_m = 0.9999 + 10**(-6) * omega_m
-    omega_m_min = 0.9999 + 10**(-5) * omega_m_min
-    omega_m_max = 0.9999 + 10**(-5) * omega_m_max
+    
+    #omega_m_min = 0.9999 + 10**(-5) * omega_m_min
+    #omega_m_max = 0.9999 + 10**(-5) * omega_m_max
     
     #print(omega_m_min,omega_m_max)
 
@@ -164,7 +167,6 @@ def run():
                 return 0.0
         if index == 41:
             M, b, H0, omega_m = theta
-            omega_m = 0.9999 + 10**(-5) * omega_m
             if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
                 return 0.0
         elif index == 31:
