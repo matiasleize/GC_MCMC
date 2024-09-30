@@ -12,10 +12,10 @@ c_luz_km = c_luz/1000
 import os
 import git
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
-
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
+
 from change_of_parameters import omega_CDM_to_luisa, omega_luisa_to_CDM
-from solve_sys import Hubble_th, F_H_prime
+from solve_sys import Hubble_th
 from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
 from AGN import zs_2_logDlH0
@@ -130,46 +130,19 @@ def params_to_chi2(theta, fixed_params, index=0,
     #[Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
     #omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,omega_m)
 
-    [Mabs, L_bar, b, H_0, omega_m_luisa] = all_parameters(theta, fixed_params, index)
-    omega_m_luisa = 0.9999 + 10**(-5) * omega_m_luisa
-    omega_m = omega_luisa_to_CDM(b,L_bar,H_0,omega_m_luisa)
-    #print(omega_m_luisa)
+    [Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
 
-    
-    #Flat prior on omega_m
+    h = H_0/100
+    Omega_m_LCDM = omega_m / h**2 
+    Omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,Omega_m_LCDM)
 
-    if not 0.27 < omega_m < 0.36:
-        return -np.inf
-    
 
-    gaussian_prior = 0
-    '''
-    #Gaussian prior on omega_m
-    mu = 0.32
-    sigma = 0.05
-    gaussian_prior = np.log(1.0/(np.sqrt(2*np.pi)*sigma))-0.5*(omega_m-mu)**2/sigma**2
-    '''
-
-    '''
-    eps = 0.0001
-    F_prime = F_H_prime(H_0, [0, 0.1, b, L_bar])
-    if np.abs(F_prime) < eps:
-        return -np.inf
-    '''
-    physical_params = [L_bar,b,H_0,omega_m_luisa]
+    physical_params = [L_bar,b,H_0,omega_m]
     zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                 z_min=0, z_max=10, num_z_points=num_z_points,
                                 all_analytic=all_analytic)
     
     
-    '''
-    eps = 10**(-5)
-    F_prime = F_H_prime(Hs_model, [0, 0.1, b, L_bar])
-    #print(np.abs(F_prime) < eps)
-    if not np.any(np.abs(F_prime) < eps):
-        return -np.inf
-    '''
-
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
 
@@ -206,14 +179,14 @@ def params_to_chi2(theta, fixed_params, index=0,
         for i in range(num_datasets): # For each datatype
             (z_data_BAO, valores_data, errores_data_cuad,wb_fid) = dataset_BAO[i]
             if i==0: #Da entry
-                rd = r_drag(omega_m,H_0,wb_fid) # rd calculation
+                rd = r_drag(Omega_m_luisa,H_0,wb_fid) # rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = Ds_to_obs_final(distancias_teoricas, rd, i)
             else: #If not..
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
-                     rd = r_drag(omega_m,H_0,wb_fid[j]) #rd calculation
+                     rd = r_drag(Omega_m_luisa,H_0,wb_fid[j]) #rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                      output_th[j] = Ds_to_obs_final(distancias_teoricas[j],rd,i)
             #Chi square calculation for each datatype (i)
             chies_BAO[i] = chi2_sin_cov(output_th,valores_data,errores_data_cuad)
@@ -303,7 +276,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
     #print(chi2_SN + chi2_CC)
-    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0 + gaussian_prior
+    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0
 
 def log_likelihood(*args, **kargs):  
     '''
