@@ -22,11 +22,11 @@ os.chdir(path_git + '/fr_mcmc/plotting/')
 
 def parameters_labels(index):
     if index == 5:
-        return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$', r'$\Omega_m$']
+        return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$', r'$\omega_m$']
     if index == 4:
         return ['$M_{abs}$', '$\L$', r'$\beta$', '$H_{0}$']
     if index == 41:
-        return ['$M_{abs}$', r'$\beta$', '$H_{0}$', r'$\Omega_m$']
+        return ['$M_{abs}$', r'$\beta$', '$H_{0}$', r'$\omega_m$']
     elif index == 31:
         return ['$\L$', r'$\beta$', '$H_{0}$']
     elif index == 32:
@@ -56,9 +56,9 @@ def run(filename):
     #if model == 'LCDM':
     reader = emcee.backends.HDFBackend(filename + '.h5')
     samples = reader.get_chain()
-    if index == 41:
-        aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
-        samples[:,:,3] = aux
+    #if index == 41:
+        #aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
+        #samples[:,:,3] = aux
         #print(samples[:,:,3])
         #print(samples[:,0,0]) #1) Num de paso
         #print(samples[0,:,0]) #2) Num de caminante
@@ -73,13 +73,16 @@ def run(filename):
     analisis.graficar_contornos(discard=burnin, thin=thin)
     plt.savefig(output_path + results_dir + '/cornerplot.png')
     plt.close()
+    
     analisis.graficar_cadenas()
-
+    plt.savefig(output_path + results_dir + '/chains.png')
+    plt.close()
 
     if index == 41:
         with np.load(filename + '_deriv.npz') as data:
             ns = data['new_samples']
-        analisis = Plotter(ns, parameters_label, '')
+        parameters_label_derived = [r'$\beta$', '$H_{0}$', r'$\Omega_m^{LCDM}$', r'$\Omega_m^{GILA-\beta}$']
+        analisis = Plotter(ns, parameters_label_derived, '')
         burnin = 0 # already has the burnin
         thin = 1
 
@@ -90,10 +93,10 @@ def run(filename):
         analisis.graficar_contornos(discard=burnin, thin=thin)
         plt.savefig(output_path + results_dir + '/cornerplot.png')
         plt.close()
-        analisis.graficar_cadenas_derivs()
         
-    plt.savefig(output_path + results_dir + '/chains.png')
-    plt.close()
+        analisis.graficar_cadenas_derivs()
+        plt.savefig(output_path + results_dir + '/chains.png')
+        plt.close()
 
 
     analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
