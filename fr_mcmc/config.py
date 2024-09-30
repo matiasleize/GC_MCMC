@@ -18,8 +18,14 @@ os.chdir(path_git + '/configs/')
 #yml_file = 'config_GILA_4p_PPS_CC_0.75.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_0.80.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_0.85.yml'
-yml_file = 'config_GILA_4p_PPS_CC_0.90.yml'
+#yml_file = 'config_GILA_4p_PPS_CC_0.90.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_1.00.yml'
+
+yml_file = 'config_GILA_4p_PPS_CC_0.90_beta_long.yml'
+#yml_file = 'config_GILA_4p_PPS_CC_0.90_beta_short.yml'
+#yml_file = 'config_GILA_4p_PPS_CC_0.90_gila_long.yml'
+#yml_file = 'config_GILA_4p_PPS_CC_0.90_gila_short.yml'
+
 
 #yml_file = 'config_GILA_4p_PPS_CC_BAO_0.75.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_BAO_0.80.yml'
