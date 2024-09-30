@@ -1,13 +1,6 @@
 #%%
 '''
-Integration of the ODE for the different cosmological models. For the Hu-Sawicki model
-we use De la Cruz et al. ODE. Besides, for the Exponential model we use the Odintsov ODE.
-Note that the initial conditions are different for the two models. 
-
-TODO: Check the times of integrations of HS using De la Cruz ODE in comparison with the one of Odintsov
-and evaluate the difference.
-
-TODO: Implement Starobinsky model integration.
+Integration of the ODE for the different cosmological models.
 '''
 
 import os
@@ -15,34 +8,17 @@ import time
 
 import git
 import numpy as np
-from scipy.constants import c as c_light  # units of m/s
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
-
-from change_of_parameters import F_H #, omega_luisa_to_CDM
-
+from scipy.constants import c as c_light  # units of m/s
 c_light_km = c_light / 1000 # units of km/s
+
 path_git = git.Repo(".", search_parent_directories=True).working_tree_dir
 path_datos_global = os.path.dirname(path_git)
-os.chdir(path_git)
-os.sys.path.append("./fr_mcmc/utils/")
-from LambdaCDM import H_LCDM
+os.chdir(path_git); os.sys.path.append("./fr_mcmc/utils/")
+from change_of_parameters import F_H_prime
 
 #%%
-def F_H_prime(H, params, model='BETA'):
-    lamb, L, beta, L_bar = params
-
-    if model == 'GILA':
-        aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 + 5 * beta * (L_bar*H)**10) +\
-                np.exp(lamb*(L*H)**2) * lamb * (L*H)**6 * (4 + lamb*(L*H)**2)
-    if model == 'BETA':
-        aux = np.exp(-beta*(L_bar*H)**8)  * beta                * (-1 + 4 * beta * (L_bar*H)**8) +\
-            2 * np.exp(lamb*(L*H)**4) * lamb * (L*H)**6 * (2 + lamb*(L*H)**4)
-
-    FH_prime = 2 * H * (1 + aux) 
-    return FH_prime
-
-
 def get_odes(z, Hubble, params_ode, lcdm=False):
     '''
     Returns the system of ODEs for the given cosmological model.
@@ -71,28 +47,20 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
 
     [lamb, L, b, L_bar, H_0, omega_m_0] = params_ode
 
-
-    #omega_m_0 = 0.999916 #omega_m_0 es el de Luisa
-    omega_r_0 = 1 - omega_m_0
-
-    F_H0 = F_H(H_0, [lamb, L, b, L_bar])
-
-    if lcdm == True:
-        rho_crit_0 = H_0**2 / kappa        
-    else:
-        rho_crit_0 = F_H0 / kappa
-    #print(omega_m_0,F_H0,rho_crit_0)
+    omega_r_0 = 2.47e-5
+    #omega_r_0 = 4.18e-5 #2.47e-5
+    rho_m_0 = 100**2 * omega_m_0 / kappa
+    rho_r_0 = 100**2 * omega_r_0 / kappa
+    
     a = 1/(1+z)
 
-    rho_r = rho_crit_0 * omega_r_0 * a**(-4)
-    rho_m = rho_crit_0 * omega_m_0 * a**(-3)
+    rho_r = rho_r_0 * a**(-4)
+    rho_m = rho_m_0 * a**(-3)
     rho_tot =  rho_r + rho_m 
     p_tot =  (1/3) * rho_r
 
     # To integrate in z
     s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar]))     
-    #print(F_H_prime(Hubble, [lamb, L, b, L_bar]))
-    #print(3 * kappa * (rho_tot + p_tot/c_light_km**2))
     #print(s)
     return s
 
@@ -104,9 +72,9 @@ def integrator(physical_params, num_z_points=int(10**5),
  
     t1 = time.time()
     
-    L_bar, b, H0, omega_m_luisa = physical_params
+    L_bar, b, H0, omega_m = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m_luisa]
+    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -153,15 +121,18 @@ def Hubble_th(physical_params, *args,
         A tuple of two NumPy arrays containing the redshifts and the corresponding Hubble parameters.
     '''
     
-    L_bar, b, H0, omega_m_luisa = physical_params
+    L_bar, b, H0, omega_m = physical_params
 
-    zs, Hs = integrator([L_bar, b, H0,omega_m_luisa])  
+    zs, Hs = integrator([L_bar, b, H0,omega_m])  
     return zs, Hs   
 
 #%%   
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
-
+    
+    os.chdir(path_git); os.sys.path.append("./fr_mcmc/utils/")
+    from LambdaCDM import H_LCDM
+    
     def plot_hubble_diagram(physical_params,hubble_th=True):
         """
         Plots the Hubble diagram for a given cosmological model and physical parameters.
