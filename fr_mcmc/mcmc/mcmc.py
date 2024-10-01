@@ -21,7 +21,7 @@ from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, r
                        read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
-from utils.change_of_parameters import omega_CDM_to_luisa
+#from utils.change_of_parameters import omega_CDM_to_luisa
 
 from config import cfg as config
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/plotting/')
@@ -185,6 +185,10 @@ def run():
             M, b, H0 = theta
             if (M_min < M < M_max and  b_min < b < b_max and H0_min < H0 < H0_max):
                 return 0.0
+        elif index == 35:
+            M, H0, omega_m = theta
+            if (M_min < M < M_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
+                return 0.0
         elif index == 21:
             L_bar, b = theta
             if (L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
@@ -272,7 +276,7 @@ def run():
                 save_path = output_directory)
 
     # If it corresponds, derive physical parameters
-    if index == 41:
+    if index == 41 or index == 35:
         os.chdir(output_directory)
  
         textfile_witness = open(witness_file,'a')
