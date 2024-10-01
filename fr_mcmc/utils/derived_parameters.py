@@ -16,27 +16,44 @@ from change_of_parameters import omega_CDM_to_luisa
 
 
 @jit
-def derived_parameters(sampler,discard, thin,model='EXP'):
-	'''Convert LCDM chains into physical chains (for Omega_m and H_0 parameters).'''
-
-	L_bar = config.FIXED_PARAMS # Fixed parameters
+def derived_parameters(sampler,discard, thin, model):
+	'''Convert LCDM, BETA or GILA chains into physical chains (for Omega_m and H_0 parameters).'''
 
 	flat_samples = sampler.get_chain(discard=discard, flat=True, thin=thin)
 	len_chain = flat_samples.shape[0]
 	new_samples = np.full_like(flat_samples,1)
-	for i in range(len_chain):
-		if len(flat_samples[0,:])==4:
-			M_abs = flat_samples[i,0]
-			beta = flat_samples[i,1]
-			H_0 = flat_samples[i,2]
-			omega_m = flat_samples[i,3]
 
-			h = H_0/100
-			Omega_m_lcdm = omega_m/h**2
-			Omega_m_GILA = omega_CDM_to_luisa(beta,L_bar,H_0,Omega_m_lcdm)
+	if model == 'LCDM':
+		for i in range(len_chain):
+			if len(flat_samples[0,:])==3:
+				M_abs = flat_samples[i,0]
+				H_0 = flat_samples[i,1]
+				omega_m = flat_samples[i,2]
 
-			new_samples[i,0] = beta
-			new_samples[i,1] = H_0
-			new_samples[i,2] = Omega_m_lcdm
-			new_samples[i,3] = Omega_m_GILA
+				h = H_0/100
+				Omega_m_lcdm = omega_m/h**2
+
+				new_samples[i,0] = M_abs
+				new_samples[i,1] = H_0
+				new_samples[i,2] = Omega_m_lcdm
+
+
+	elif model == 'GILA' or model == 'BETA':
+		L_bar = config.FIXED_PARAMS # Fixed parameters
+		for i in range(len_chain):
+			if len(flat_samples[0,:])==4:
+				M_abs = flat_samples[i,0]
+				beta = flat_samples[i,1]
+				H_0 = flat_samples[i,2]
+				omega_m = flat_samples[i,3]
+
+				h = H_0/100
+				Omega_m_lcdm = omega_m/h**2
+				Omega_m_GILA = omega_CDM_to_luisa(beta,L_bar,H_0,Omega_m_lcdm,model)
+
+				new_samples[i,0] = beta
+				new_samples[i,1] = H_0
+				new_samples[i,2] = Omega_m_lcdm
+				new_samples[i,3] = Omega_m_GILA
+
 	return new_samples

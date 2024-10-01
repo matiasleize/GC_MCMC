@@ -35,7 +35,7 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
         while the last one specifies the cosmological model. Mathematically, this information is contained in
         the function Gamma.
     model : str, optional
-        Cosmological model that is being integrated. Defaults to 'HS'.
+        Cosmological model that is being integrated. Defaults to 'LCDM'.
 
     Returns:
     -----------
@@ -45,7 +45,7 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
     #kappa = 8 * np.pi * G_newton / 3
     kappa = 1
 
-    [lamb, L, b, L_bar, H_0, omega_m_0] = params_ode
+    [lamb, L, b, L_bar, H_0, omega_m_0, model] = params_ode
 
     omega_r_0 = 2.47e-5
     #omega_r_0 = 4.18e-5 #2.47e-5
@@ -60,12 +60,12 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
     p_tot =  (1/3) * rho_r
 
     # To integrate in z
-    s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar]))     
+    s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar],model))     
     #print(s)
     return s
 
 
-def integrator(physical_params, num_z_points=int(10**5),
+def integrator(physical_params, model, num_z_points=int(10**5),
                 initial_z=0, final_z=3,
                 system_equations=get_odes, verbose=False,
                 method='RK45', rtol=1e-11, atol=1e-16):
@@ -74,7 +74,7 @@ def integrator(physical_params, num_z_points=int(10**5),
     
     L_bar, b, H0, omega_m = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m]
+    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m, model]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -96,7 +96,7 @@ def integrator(physical_params, num_z_points=int(10**5),
     return zs_final, Hs_final
 
 
-def Hubble_th(physical_params, *args,
+def Hubble_th(physical_params, model, *args,
                 z_min=0, z_max=10, **kwargs):
 
     '''
@@ -106,7 +106,7 @@ def Hubble_th(physical_params, *args,
     Args:
         physical_params: A tuple of three physical parameters in the order (matter density, curvature, Hubble constant).
         model: A string that specifies the cosmological model to use. Valid options are 'LCDM' (Lambda-CDM),
-            'EXP' (exponential model), 'HS' (Hu-Sawicki model), and 'ST' (Starobinsky model).
+            'BETA' (beta model) and 'GILA' (GILA model).
         b_crit: A critical value for the distortion parameter use in HS and ST models.
         all_analytic: A boolean flag that specifies whether to use an analytic approximation for the Hubble parameter
             or numerical integration.
@@ -123,7 +123,7 @@ def Hubble_th(physical_params, *args,
     
     L_bar, b, H0, omega_m = physical_params
 
-    zs, Hs = integrator([L_bar, b, H0,omega_m])  
+    zs, Hs = integrator([L_bar, b, H0,omega_m], model)  
     return zs, Hs   
 
 #%%   
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     #omega_m = 0.3
 
     from change_of_parameters import omega_luisa_to_CDM
-    omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa) #L_bar in units of H0 (inside the function L_bar is divided by H0)
+    omega_m = omega_luisa_to_CDM(b, L_bar, H_0, omega_m_luisa, model) #L_bar in units of H0 (inside the function L_bar is divided by H0)
 
     #physical_params = [L_bar, b, H_0, omega_m_luisa] #L_bar in units of H0
 

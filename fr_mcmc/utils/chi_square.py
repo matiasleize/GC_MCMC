@@ -14,7 +14,8 @@ import git
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 
-from change_of_parameters import omega_CDM_to_luisa, omega_luisa_to_CDM
+from LambdaCDM import H_LCDM
+from change_of_parameters import omega_CDM_to_luisa
 from solve_sys import Hubble_th
 from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
@@ -71,6 +72,10 @@ def all_parameters(theta, fixed_params, index):
     elif index == 34:
         [Mabs, b, H_0] = theta
         L_bar, omega_m = fixed_params
+    
+    elif index == 35:
+        [Mabs, H_0, omega_m] = theta
+        L_bar, b = fixed_params
 
     elif index == 21:
         [L_bar, b] = theta
@@ -95,7 +100,7 @@ def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
                    dataset_SN=None, dataset_CC=None,
                    dataset_BAO=None, dataset_DESI=None, dataset_AGN=None, H0_Riess=False,
-                   num_z_points=int(10**5), model='HS',n=1,
+                   num_z_points=int(10**5), model='LCDM',n=1,
                    nuisance_2 = False, enlarged_errors=False,
                    all_analytic=False):
     '''
@@ -113,7 +118,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     H0_Riess:
 
     num_z_points:
-    model (str): cosmological model ('LCDM', 'HS', 'EXP').
+    model (str): cosmological model ('LCDM', 'BETA', 'GILA').
     n (int): (1, 2)
     nuisance_2 (bool):
     enlarged_errors (bool):
@@ -131,18 +136,22 @@ def params_to_chi2(theta, fixed_params, index=0,
     #omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,omega_m)
 
     [Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
-
     h = H_0/100
     Omega_m_LCDM = omega_m / h**2 
-    Omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,Omega_m_LCDM)
+
+    if model != 'LCDM':
+        Omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,Omega_m_LCDM,model=model)
+
+        physical_params = [L_bar,b,H_0,omega_m]
+        zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
+                                    z_min=0, z_max=10, num_z_points=num_z_points,
+                                    all_analytic=all_analytic)
+    elif model == 'LCDM':
+        zs_model = np.linspace(0, 10, num_z_points)
+        Hs_model = H_LCDM(zs_model, Omega_m_LCDM, H_0)
+    
 
 
-    physical_params = [L_bar,b,H_0,omega_m]
-    zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
-                                z_min=0, z_max=10, num_z_points=num_z_points,
-                                all_analytic=all_analytic)
-    
-    
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
 

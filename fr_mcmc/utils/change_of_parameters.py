@@ -9,7 +9,7 @@ c_luz_km = c_luz/1000
 # Parameters order: omega_m, b, H_0, n
 
 #GILA model
-def F_H(H, params, model='GILA'):     
+def F_H(H, params, model):     
     lamb, L, beta, L_bar = params
     if model == 'GILA':
         FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**10) \
@@ -20,7 +20,7 @@ def F_H(H, params, model='GILA'):
 
     return FH
 
-def F_H_prime(H, params, model='GILA'):
+def F_H_prime(H, params, model):
     lamb, L, beta, L_bar = params
 
     if model == 'GILA':
@@ -33,13 +33,13 @@ def F_H_prime(H, params, model='GILA'):
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
 
-def omega_luisa_to_CDM(beta, L_bar, H0, Omega_m_luisa):
-    factor = F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) / H0**2
+def omega_luisa_to_CDM(beta, L_bar, H0, Omega_m_luisa, model):
+    factor = F_H(H0, [0, 1e-27/H0, beta, L_bar/H0], model) / H0**2
     omega_cdm = Omega_m_luisa * factor
     return omega_cdm
 
-def omega_CDM_to_luisa(beta, L_bar, H0, Omega_lcdm):
-    factor_inv = H0**2 / F_H(H0, [0, 1e-27/H0, beta, L_bar/H0]) 
+def omega_CDM_to_luisa(beta, L_bar, H0, Omega_lcdm, model):
+    factor_inv = H0**2 / F_H(H0, [0, 1e-27/H0, beta, L_bar/H0], model) 
     omega_luisa = Omega_lcdm * factor_inv
     return omega_luisa
 
