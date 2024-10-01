@@ -22,7 +22,7 @@ from LambdaCDM import H_LCDM_rad
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-from change_of_parameters import F_H#, omega_luisa_to_CDM
+#from change_of_parameters import F_H#, omega_luisa_to_CDM
 
 
 
