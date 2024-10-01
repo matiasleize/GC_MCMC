@@ -8,7 +8,7 @@ USE_DESI: False
 USE_AGN: False
 USE_H0: False
 
-MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
+MODEL: 'BETA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
 FIXED_PARAMS: 0.90
 LOG_LIKELIHOOD_INDEX: 41 #See docs/parameters_protocol.md

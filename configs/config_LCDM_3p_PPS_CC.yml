@@ -8,10 +8,10 @@ USE_DESI: False
 USE_AGN: False
 USE_H0: False
 
-MODEL: 'BETA' #Choose between 'LCDM', or 'GILA'
+MODEL: 'LCDM' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: 0.90
-LOG_LIKELIHOOD_INDEX: 41 #See docs/parameters_protocol.md
+FIXED_PARAMS: [0.90, 0]
+LOG_LIKELIHOOD_INDEX: 35 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 20000 #Maximum number of samples
 WITNESS_FREQ: 1 #Frequency in which witness is refreshed
@@ -21,17 +21,17 @@ M_PRIOR: [-21, -18]
 L_BAR_PRIOR: [0.5, 1.5]
 B_PRIOR: [0, 100] #Only read if MODEL is 'HS' or 'EXP'
 H0_PRIOR: [60, 80]
-OMEGA_M_PRIOR: [0.14, 0.5]
+OMEGA_M_PRIOR: [0.1, 0.3]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 1, 70, 0.143]
-BOUNDS: [[-21, -18], [0, 100], [60, 80], [0.14,0.5]]
+GUEST: [-19.352, 70, 0.143]
+BOUNDS: [[-21, -18], [60, 80], [0.1,0.3]]
 
 ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
 
 #Directory in which output files are stored
-OUTPUT_DIR: '/GILA-output/L=0.90/beta_model/'
+OUTPUT_DIR: '/GILA-output/LCDM/'
 
 #Other things that are not in use:
 #DATA_PATH: './data'
