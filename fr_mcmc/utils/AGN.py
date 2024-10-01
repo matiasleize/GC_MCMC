@@ -45,7 +45,7 @@ def chi2_AGN_nuisance(teo, data, errors_cuad):
     return chi2
 
 def params_to_chi2_AGN_nuisance(theta, fixed_params, dataset_AGN, n=1,
-                                num_z_points=int(10**6), model='HS'
+                                num_z_points=int(10**6), model='LCDM'
                                 ,less_z=False,all_analytic=False):
     '''
     Given the model parameters, it returns the statistics chi squared
