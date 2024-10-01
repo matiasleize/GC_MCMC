@@ -35,6 +35,8 @@ def parameters_labels(index):
         return ['$M_{abs}$', '$\L$', r'$\beta$']
     elif index == 34:
         return ['$M_{abs}$', r'$\beta$', '$H_{0}$']
+    elif index == 35:
+        return ['$M_{abs}$', '$H_{0}$', r'$\omega_m$']
     elif index == 21:
         return ['$\L$', r'$\beta$']
     elif index == 22:
@@ -98,6 +100,25 @@ def run(filename):
         plt.savefig(output_path + results_dir + '/chains.png')
         plt.close()
 
+    if index == 35:
+        with np.load(filename + '_deriv.npz') as data:
+            ns = data['new_samples']
+        parameters_label_derived = ['$M_{abs}$', '$H_{0}$', r'$\Omega_m^{LCDM}$']
+        analisis = Plotter(ns, parameters_label_derived, '')
+        burnin = 0 # already has the burnin
+        thin = 1
+
+        results_dir = '/results_derivs'
+        if not os.path.exists(output_path + results_dir):
+                os.mkdir(output_path + results_dir)
+    
+        analisis.graficar_contornos(discard=burnin, thin=thin)
+        plt.savefig(output_path + results_dir + '/cornerplot.png')
+        plt.close()
+        
+        analisis.graficar_cadenas_derivs()
+        plt.savefig(output_path + results_dir + '/chains.png')
+        plt.close()
 
     analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
     textfile_witness = open(output_path + results_dir + '/metadata.dat','w')
