@@ -21,7 +21,7 @@ class Plotter:
 		self.labels=labels
 		self.title=title
 
-	def graficar_cadenas(self, num_chains = None):
+	def plot_chains(self, num_chains = None):
 		'''Plot the chains for each parameter.'''
 		samples = self.sampler.get_chain()
 		#aux = 0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
@@ -45,7 +45,7 @@ class Plotter:
 		if not self.title==None:
 			fig.suptitle(self.title);
 
-	def graficar_cadenas_derivs(self):
+	def plot_chains_derivs(self):
 		'''Plot the posprocessed chains for each parameter.'''
 		if isinstance(self.sampler, np.ndarray)==True: #Posprocessed chains
 			samples = self.sampler
@@ -65,7 +65,7 @@ class Plotter:
 			fig.suptitle(self.title);
 
 
-	def graficar_contornos(self, discard=0, thin=1, color='b'):
+	def plot_contours(self, discard=0, thin=1, color='b'):
 		'''
 		Grafica los cornerplots para los parámetros a partir de las cadenas
 		de Markov. En la diagonal aparecen las  distribuciones de probabilidad
@@ -96,7 +96,7 @@ class Plotter:
 						legend_labels='')
 
 
-	def reportar_intervalos(self, discard, thin, save_path, hdi=True):
+	def report_intervals(self, discard, thin, save_path, hdi=True):
 		'''
 		Print parameters values, not only the mode values but also their values
 		at one and two sigmas.
