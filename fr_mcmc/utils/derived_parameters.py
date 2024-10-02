@@ -13,8 +13,6 @@ os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 #from solve_sys import Hubble_th
 from change_of_parameters import omega_CDM_to_luisa
 
-
-
 @jit
 def derived_parameters(sampler,discard, thin, model):
 	'''Convert LCDM, BETA or GILA chains into physical chains (for Omega_m and H_0 parameters).'''
@@ -33,9 +31,13 @@ def derived_parameters(sampler,discard, thin, model):
 				h = H_0/100
 				Omega_m_lcdm = omega_m/h**2
 
-				new_samples[i,0] = M_abs
-				new_samples[i,1] = H_0
-				new_samples[i,2] = Omega_m_lcdm
+				omega_r_0 = 2.47e-5
+				Omega_r_lcdm = omega_r_0 / h**2
+				Omega_Lambda_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm			
+
+				new_samples[i,0] = H_0
+				new_samples[i,1] = Omega_m_lcdm
+				new_samples[i,2] = Omega_Lambda_lcdm
 
 
 	elif model == 'GILA' or model == 'BETA':
@@ -51,9 +53,13 @@ def derived_parameters(sampler,discard, thin, model):
 				Omega_m_lcdm = omega_m/h**2
 				Omega_m_GILA = omega_CDM_to_luisa(beta,L_bar,H_0,Omega_m_lcdm,model)
 
-				new_samples[i,0] = beta
-				new_samples[i,1] = H_0
-				new_samples[i,2] = Omega_m_lcdm
-				new_samples[i,3] = Omega_m_GILA
+				omega_r_0 = 2.47e-5
+				Omega_r_lcdm = omega_r_0 / h**2
+				Omega_Lambda_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm			
+
+				new_samples[i,0] = H_0
+				new_samples[i,1] = Omega_m_lcdm
+				new_samples[i,2] = Omega_m_GILA
+				new_samples[i,3] = Omega_Lambda_lcdm
 
 	return new_samples
