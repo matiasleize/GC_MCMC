@@ -62,28 +62,28 @@ def run(filename):
         #aux =0.9999 * samples[:,:,3]/samples[:,:,3] + samples[:,:,3] * 10**(-5)
         #samples[:,:,3] = aux
         #print(samples[:,:,3])
-        #print(samples[:,0,0]) #1) Num de paso
-        #print(samples[0,:,0]) #2) Num de caminante
-        #print(samples[0,0,:]) #3) Num de parametro
+        #print(samples[:,0,0]) #1) Num of step
+        #print(samples[0,:,0]) #2) Num of walker
+        #print(samples[0,0,:]) #3) Num of parameter
     burnin= burnin=int(0.2*len(samples[:,0])); thin=1
-    analisis = Plotter(reader, parameters_label, 'Titulo')
+    analisis = Plotter(reader, parameters_label, 'Title')
 
     results_dir = '/results'
     if not os.path.exists(output_path + results_dir):
             os.mkdir(output_path + results_dir)
  
-    analisis.graficar_contornos(discard=burnin, thin=thin)
+    analisis.plot_contours(discard=burnin, thin=thin)
     plt.savefig(output_path + results_dir + '/cornerplot.png')
     plt.close()
     
-    analisis.graficar_cadenas()
+    analisis.plot_chains()
     plt.savefig(output_path + results_dir + '/chains.png')
     plt.close()
 
     if index == 41:
         with np.load(filename + '_deriv.npz') as data:
             ns = data['new_samples']
-        parameters_label_derived = [r'$\beta$', '$H_{0}$', r'$\Omega_m^{LCDM}$', r'$\Omega_m^{GILA-\beta}$']
+        parameters_label_derived = [r'$H_{0}$', r'$\Omega_m^{LCDM}$', r'$\Omega_m^{GILA-\beta}$', r'$\Omega_{\Lambda}^{LCDM}$']
         analisis = Plotter(ns, parameters_label_derived, '')
         burnin = 0 # already has the burnin
         thin = 1
@@ -92,18 +92,18 @@ def run(filename):
         if not os.path.exists(output_path + results_dir):
                 os.mkdir(output_path + results_dir)
     
-        analisis.graficar_contornos(discard=burnin, thin=thin)
+        analisis.plot_contours(discard=burnin, thin=thin)
         plt.savefig(output_path + results_dir + '/cornerplot.png')
         plt.close()
         
-        analisis.graficar_cadenas_derivs()
+        analisis.plot_chains_derivs()
         plt.savefig(output_path + results_dir + '/chains.png')
         plt.close()
 
     if index == 35:
         with np.load(filename + '_deriv.npz') as data:
             ns = data['new_samples']
-        parameters_label_derived = ['$M_{abs}$', '$H_{0}$', r'$\Omega_m^{LCDM}$']
+        parameters_label_derived = ['$H_{0}$', r'$\Omega_m^{LCDM}$', r'$\Omega_{\Lambda}^{LCDM}$']
         analisis = Plotter(ns, parameters_label_derived, '')
         burnin = 0 # already has the burnin
         thin = 1
@@ -112,15 +112,15 @@ def run(filename):
         if not os.path.exists(output_path + results_dir):
                 os.mkdir(output_path + results_dir)
     
-        analisis.graficar_contornos(discard=burnin, thin=thin)
+        analisis.plot_contours(discard=burnin, thin=thin)
         plt.savefig(output_path + results_dir + '/cornerplot.png')
         plt.close()
         
-        analisis.graficar_cadenas_derivs()
+        analisis.plot_chains_derivs()
         plt.savefig(output_path + results_dir + '/chains.png')
         plt.close()
 
-    analisis.reportar_intervalos(discard=burnin, thin=thin, save_path = output_path + results_dir)
+    analisis.report_intervals(discard=burnin, thin=thin, save_path = output_path + results_dir)
     textfile_witness = open(output_path + results_dir + '/metadata.dat','w')
     textfile_witness.write('{}'.format(config))
 
