@@ -261,16 +261,16 @@ def run():
         textfile_witness.write(('\n Estimated time: {} min'.format(len(samples)/60)))
         textfile_witness.close()
 
-        new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
-        np.savez(filename+'_deriv', new_samples=new_samples)
+        #new_samples = derived_parameters(reader,discard=burnin,thin=thin,model=model)
+        #np.savez(filename+'_deriv', new_samples=new_samples)
 
         textfile_witness = open(witness_file,'a')
         textfile_witness.write('\n Done!')
         textfile_witness.close()
 
         # Print the output
-        with np.load(filename+'_deriv.npz') as data:
-            ns = data['new_samples']        
+        #with np.load(filename+'_deriv.npz') as data:
+        #    ns = data['new_samples']        
 
     # Plot the results
     analysis.run(filename)
