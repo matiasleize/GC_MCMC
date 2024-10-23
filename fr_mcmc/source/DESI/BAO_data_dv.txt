@@ -1,3 +1,0 @@
-z_eff   Dv_rd   error_Dv_rd type wb_fid
-0.295   7.93    0.15    Dv/rd   1
-1.491   26.07   0.67    Dv/rd   1
