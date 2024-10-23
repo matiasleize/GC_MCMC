@@ -5,8 +5,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import cumtrapz as cumtrapz
 
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000;
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light/1000;
 
 import os
 import git
@@ -20,21 +20,21 @@ from LambdaCDM import H_LCDM
 #Parameters order: omega_m,b,H_0,n
 
 def zs_2_logDlH0(INT,z_data):
-    DlH0 = (c_luz_km * (1 + z_data)) * INT #km/sec
+    DlH0 = (c_light_km * (1 + z_data)) * INT #km/sec
     return np.log10(DlH0) #log(km/sec)
 
 ### Nuisance AGN
 def Hs_2_logDl(zs,Hs,z_data):
     INT = cumtrapz(Hs**(-1), zs, initial=0)
 
-    Dl = (c_luz_km * (1 + zs)) * INT #Mpc
+    Dl = (c_light_km * (1 + zs)) * INT #Mpc
     output = interp1d(zs,Dl)
     return np.log10(output(z_data)) #log(Mpc)
 
 def Hs_2_logDlH0(zs,Hs,z_data):
     INT = cumtrapz(Hs**(-1), zs, initial=0)
 
-    Dl = (c_luz_km * (1 + zs)) * H0 * INT #Mpc
+    Dl = (c_light_km * (1 + zs)) * H0 * INT #Mpc
     output = interp1d(zs,Dl)
     return np.log10(output(z_data)) #log(Mpc)
 

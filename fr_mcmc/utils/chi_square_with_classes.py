@@ -6,8 +6,8 @@ the parameters of the model and the datasets which are use.
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import cumtrapz as cumtrapz
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light/1000
 
 import os
 import git
@@ -50,7 +50,7 @@ class theo_part:
         return int_inv_Hs_interpol
     
     def luminosity_distance_sn(self,zhel,zcmb):
-        dc_int =  c_luz_km * theo_part.int_inv_Hs_interpol(zcmb)
+        dc_int =  c_light_km * theo_part.int_inv_Hs_interpol(zcmb)
         d_L = (1 + zhel) * dc_int
         return d_L
     

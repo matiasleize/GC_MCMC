@@ -16,8 +16,8 @@ c_light_km = c_light / 1000 # units of km/s
 path_git = git.Repo(".", search_parent_directories=True).working_tree_dir
 path_datos_global = os.path.dirname(path_git)
 os.chdir(path_git); os.sys.path.append("./fr_mcmc/utils/")
-from change_of_parameters import F_H_prime
-
+from change_of_parameters import F_H, F_H_prime
+from constants import LAMBDA, L, OMEGA_R_0, KAPPA
 #%%
 def get_odes(z, Hubble, params_ode, lcdm=False):
     '''
@@ -42,25 +42,22 @@ def get_odes(z, Hubble, params_ode, lcdm=False):
     list
         Set of ODEs for the dynamical variables.
     '''    
-    #kappa = 8 * np.pi * G_newton / 3
-    kappa = 1
+    [LAMBDA, L, b, L_bar, H_0, model] = params_ode #Here L and L_bar are in units of H0^{-1}
 
-    [lamb, L, b, L_bar, H_0, omega_m_0, model] = params_ode
+    F_H0 = F_H(H_0, [LAMBDA, L, b, L_bar], model)
 
-    omega_r_0 = 2.47e-5
-    #omega_r_0 = 4.18e-5 #2.47e-5
-    rho_m_0 = 100**2 * omega_m_0 / kappa
-    rho_r_0 = 100**2 * omega_r_0 / kappa
+    omega_m_0 = F_H0 /(100**2) - OMEGA_R_0
+
+    rho_m_0 = 100**2 * omega_m_0 / KAPPA
+    rho_r_0 = 100**2 * OMEGA_R_0 / KAPPA
     
-    a = 1/(1+z)
-
-    rho_r = rho_r_0 * a**(-4)
-    rho_m = rho_m_0 * a**(-3)
+    rho_r = rho_r_0 * (1+z)**4
+    rho_m = rho_m_0 * (1+z)**3
     rho_tot =  rho_r + rho_m 
     p_tot =  (1/3) * rho_r
 
     # To integrate in z
-    s =  3 * kappa * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [lamb, L, b, L_bar],model))     
+    s =  3 * KAPPA * (rho_tot + p_tot/c_light_km**2) / ((1+z)*F_H_prime(Hubble, [LAMBDA, L, b, L_bar],model))     
     #print(s)
     return s
 
@@ -71,10 +68,9 @@ def integrator(physical_params, model, num_z_points=int(10**5),
                 method='RK45', rtol=1e-11, atol=1e-16):
  
     t1 = time.time()
-    
-    L_bar, b, H0, omega_m = physical_params
+    L_bar, b, H0 = physical_params
     zs_int = np.linspace(initial_z, final_z, num_z_points)
-    ode_params = [0, 1e-27/H0, b, L_bar/H0, H0, omega_m, model]
+    ode_params = [LAMBDA, L/H0, b, L_bar/H0, H0, model]
     sol = solve_ivp(system_equations, (initial_z,final_z),
                     [H0], t_eval=zs_int, args = [ode_params],
                     rtol=rtol, atol=atol, method=method)
@@ -121,9 +117,9 @@ def Hubble_th(physical_params, model, *args,
         A tuple of two NumPy arrays containing the redshifts and the corresponding Hubble parameters.
     '''
     
-    L_bar, b, H0, omega_m = physical_params
+    L_bar, b, H0 = physical_params
 
-    zs, Hs = integrator([L_bar, b, H0,omega_m], model)  
+    zs, Hs = integrator([L_bar, b, H0], model)  
     return zs, Hs   
 
 #%%   

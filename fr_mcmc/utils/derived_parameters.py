@@ -12,6 +12,7 @@ from config import cfg as config
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 #from solve_sys import Hubble_th
 from change_of_parameters import omega_CDM_to_luisa
+from constants import OMEGA_R_0
 
 @jit
 def derived_parameters(sampler,discard, thin, model):
@@ -29,10 +30,8 @@ def derived_parameters(sampler,discard, thin, model):
 				omega_m = flat_samples[i,2]
 
 				h = H_0/100
-				Omega_m_lcdm = omega_m/h**2
-
-				omega_r_0 = 2.47e-5
-				Omega_r_lcdm = omega_r_0 / h**2
+				Omega_r_lcdm = OMEGA_R_0 / h**2
+				Omega_m_lcdm = omega_m / h**2
 				Omega_Lambda_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm			
 
 				new_samples[i,0] = H_0
@@ -50,11 +49,9 @@ def derived_parameters(sampler,discard, thin, model):
 				omega_m = flat_samples[i,3]
 
 				h = H_0/100
-				Omega_m_lcdm = omega_m/h**2
+				Omega_r_lcdm = OMEGA_R_0 / h**2
+				Omega_m_lcdm = omega_m / h**2
 				Omega_m_GILA = omega_CDM_to_luisa(beta,L_bar,H_0,Omega_m_lcdm,model)
-
-				omega_r_0 = 2.47e-5
-				Omega_r_lcdm = omega_r_0 / h**2
 				Omega_Lambda_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm			
 
 				new_samples[i,0] = H_0

@@ -8,8 +8,8 @@ import time
 from scipy.integrate import cumtrapz as cumtrapz
 from scipy.integrate import simps as simps
 from scipy.interpolate import interp1d
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light/1000
 #%%
 
 def E_LCDM(z, Omega_m):

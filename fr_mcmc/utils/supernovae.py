@@ -16,8 +16,8 @@ from LambdaCDM import H_LCDM
 
 from scipy.integrate import cumtrapz as cumtrapz
 from scipy.interpolate import interp1d
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000; #kilometers/seconds
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light/1000; #kilometers/seconds
 #Parameters order: Mabs,omega_m,b,H_0,n
 
 def aparent_magnitude_th(int_inv_Hs_interpolado, zcmb, zhel):
@@ -28,7 +28,7 @@ def aparent_magnitude_th(int_inv_Hs_interpolado, zcmb, zhel):
     where d_L = (c/H_0) (1+z) int(dz'/E(z')).
     '''
 
-    dc_int =  c_luz_km * int_inv_Hs_interpolado(zcmb)
+    dc_int =  c_light_km * int_inv_Hs_interpolado(zcmb)
     d_L = (1 + zhel) * dc_int
     muth = 25.0 + 5.0 * np.log10(d_L)
     return muth

@@ -21,7 +21,6 @@ from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, r
                        read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
-#from utils.change_of_parameters import omega_CDM_to_luisa
 
 from config import cfg as config
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/plotting/')
@@ -39,21 +38,21 @@ def run():
     witness_file = 'witness_' + str(config.WITNESS_NUM) + '.txt'
     
     bnds = config.BOUNDS
-    [M_min, M_max] = config.M_PRIOR
-    if model != 'LCDM':
+    if model == 'LCDM':
+        [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
+        [H0_min, H0_max] = config.H0_PRIOR
+
+    elif (model == 'GILA' or model =='BETA'): 
         [L_bar_min, L_bar_max] = config.L_BAR_PRIOR
         [b_min, b_max] = config.B_PRIOR
-    [H0_min, H0_max] = config.H0_PRIOR
-    [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
+        [H0_min, H0_max] = config.H0_PRIOR
 
 
-    #0.999916
-    #omega_m = 0.9999 + 10**(-6) * omega_m
-    
-    #omega_m_min = 0.9999 + 10**(-5) * omega_m_min
-    #omega_m_max = 0.9999 + 10**(-5) * omega_m_max
-    
-    #print(omega_m_min,omega_m_max)
+    if (config.USE_BAO == True or config.USE_DESI == True):
+        [bao_param_min, bao_param_max] = config.BAO_PARAM_PRIOR
+
+    if (config.USE_SN == True or config.USE_PPLUS  == True or config.USE_PPLUS_SHOES  == True):
+        [M_min, M_max] = config.M_PRIOR
 
     #%% Import cosmological data
     path_data = path_git + '/fr_mcmc/source/'
@@ -111,15 +110,10 @@ def run():
     # DESI
     if config.USE_DESI == True:    
         os.chdir(path_data + 'DESI/')
-        ds_DESI = []
-        archivos_DESI = ['DESI_data_dh_dm.txt','DESI_data_dv.txt']
-        for i in range(5):
-            aux = read_data_DESI(archivos_DESI[i])
-            ds_DESI.append(aux)
+        ds_DESI = read_data_DESI('DESI_data_dh_dm.txt','DESI_data_dv.txt')
         datasets.append('_DESI')
     else:
         ds_DESI = None
-
 
     # AGN
     if config.USE_AGN == True:
@@ -156,68 +150,54 @@ def run():
     nll = lambda theta: -ll(theta) # negative log likelihood
 
     # Define the prior distribution
-    def log_prior(theta):
-        if index == 5:
-            M, L_bar, b, H0, omega_m = theta
-            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
-                return 0.0
-        if index == 4:
-            M, L_bar, b, H0 = theta
-            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
-                return 0.0
-        if index == 41:
-            M, b, H0, omega_m = theta
-            if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
-                return 0.0
-        elif index == 31:
-            L_bar, b, H0 = theta
-            if (L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
-                return 0.0
-        elif index == 32:
-            M, L_bar, H0 = theta
-            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and H0_min < H0 < H0_max):
-                return 0.0
-        elif index == 33:
-            M, L_bar, b = theta
-            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
-                return 0.0
-        elif index == 34:
-            M, b, H0 = theta
-            if (M_min < M < M_max and  b_min < b < b_max and H0_min < H0 < H0_max):
-                return 0.0
-        elif index == 35:
-            M, H0, omega_m = theta
-            if (M_min < M < M_max and H0_min < H0 < H0_max and omega_m_min < omega_m < omega_m_max):
-                return 0.0
-        elif index == 21:
-            L_bar, b = theta
-            if (L_bar_min < L_bar < L_bar_max and b_min < b < b_max):
-                return 0.0
-        elif index == 22:
-            L_bar, H0 = theta
-            if (L_bar_min < L_bar < L_bar_max and H0_min < H0 < H0_max):
-                return 0.0
-        elif index == 23:
-            M, L_bar = theta
-            if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max):
-                return 0.0
+    def log_prior(theta, model):
+        if model == 'LCDM':
+            if index == 4:
+                M, bao_param, omega_m, H0 = theta
+                if (M_min < M < M_max and bao_param_min < bao_param < bao_param_max and omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 31:
+                M, omega_m, H0 = theta
+                if (M_min < M < M_max and omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 32:
+                bao_param, omega_m, H0 = theta
+                if (bao_param_min < bao_param < bao_param_max and omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
+                    return 0.0
 
-        elif index == 1:
-            L_bar = theta
-            if L_bar_min < L_bar < L_bar_max:
-                return 0.0
+        elif (model == 'GILA' or model =='BETA'): 
+            if index == 5:
+                M, bao_param, L_bar, b, H0 = theta
+                if (M_min < M < M_max and bao_param_min < bao_param < bao_param_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 41:
+                M, bao_param, b, H0 = theta
+                if (M_min < M < M_max and bao_param_min < bao_param < bao_param_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 42:
+                M, L_bar, b, H0 = theta
+                if (M_min < M < M_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 43:
+                bao_param, L_bar, b, H0 = theta
+                if (bao_param_min < bao_param < bao_param_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 31:
+                M, b, H0 = theta
+                if (M_min < M < M_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
+            elif index == 32:
+                bao_param, b, H0 = theta
+                if (bao_param_min < bao_param < bao_param_max and b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
         return -np.inf
     
-    #print(log_prior([-19.298, 9.771, 71.887, 1.6]))
     # Define the posterior distribution
     def log_probability(theta):
-        lp = log_prior(theta)
+        lp = log_prior(theta, model)
         if not np.isfinite(lp): # Maybe this condition is not necessary..
             return -np.inf
         return lp + ll(theta)
-        #print(lp)
-        #return ll(theta)
-
 
     filename = 'sample_' + model + datasets + '_' + str(num_params) + 'params'
     output_directory = path_datos_global + output_dir + filename
@@ -226,7 +206,6 @@ def run():
         os.mkdir(output_directory)
 
     filename_ml = 'maximun_likelihood' + '_' + model + datasets + '_' + str(num_params) + 'params'
-
     
     # If exist, import mean values of the free parameters. If not, calculate, save and load calculation.
     os.chdir(output_directory)
@@ -236,7 +215,6 @@ def run():
     else:
         print('Calculating maximum likelihood parameters ..')
         initial = np.array(config.GUEST)
-        
         soln = minimize(nll, initial, options = {'eps': 0.01}, bounds = bnds)
         
         #minimizer_kwargs= dict(method='L-BFGS-B', bounds = bnds)
@@ -251,21 +229,6 @@ def run():
     # Define initial values of each chain using the minimun 
     # values of the chi square.
     pos = sol * (1 +  0.01 * np.random.randn(config.NUM_WALKERS, num_params))
-    
-    #pos = sol * (1 + 0.000001*np.random.randn(config.NUM_WALKERS, num_params))    
-    #pos = sol * np.ones((config.NUM_WALKERS, num_params)) #Gives error
-
-    #sol = [-19.298, 9.771, 71.887, 0.3]
-    #pos = sol * np.ones((config.NUM_WALKERS, num_params))
-    #print(pos)
-    #pos = np.zeros((config.NUM_WALKERS, num_params))
-    #for i in range(config.NUM_WALKERS):
-    #    #Largarlo del valor medio de la corrida anterior con Omega_m
-    #    pos[i,:] = [-19.298, 9.771, 71.887, 0.3]
-    #print(pos)
-
-
-
     filename_h5 = filename + '.h5'
 
     MCMC_sampler(log_probability,pos, 
@@ -307,9 +270,7 @@ def run():
 
         # Print the output
         with np.load(filename+'_deriv.npz') as data:
-            ns = data['new_samples']
-
-        
+            ns = data['new_samples']        
 
     # Plot the results
     analysis.run(filename)

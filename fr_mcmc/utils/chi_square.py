@@ -6,8 +6,8 @@ the parameters of the model and the datasets which are use.
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import cumtrapz as cumtrapz
-from scipy.constants import c as c_luz #meters/seconds
-c_luz_km = c_luz/1000
+from scipy.constants import c as c_light #meters/seconds
+c_light_km = c_light/1000
 
 import os
 import git
@@ -15,11 +15,12 @@ path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 
 from LambdaCDM import H_LCDM
-from change_of_parameters import omega_CDM_to_luisa
+from change_of_parameters import omega_CDM_to_luisa, F_H
 from solve_sys import Hubble_th
 from supernovae import aparent_magnitude_th, chi2_supernovae
 from BAO import r_drag, Hs_to_Ds, Ds_to_obs_final
 from AGN import zs_2_logDlH0
+from constants import OMEGA_R_0, LAMBDA, L
 
 def chi2_sin_cov(teo, data, errors_cuad):
     '''
@@ -34,7 +35,8 @@ def chi2_sin_cov(teo, data, errors_cuad):
     chi2 = np.sum((data-teo)**2/errors_cuad)
     return chi2
 
-def all_parameters(theta, fixed_params, index):
+
+def all_parameters(theta, fixed_params, model, index):
     '''
     Auxiliary function that reads and organizes fixed and variable parameters into one 
     list according to the index criteria.
@@ -45,56 +47,42 @@ def all_parameters(theta, fixed_params, index):
     
     '''
 
-    if index == 5:
-        [Mabs, L_bar, b, H_0, omega_m] = theta
-        _ = fixed_params
+    if model == 'LCDM':
+        if index == 4:
+            [Mabs, bao_param, omega_m, H_0] = theta
+            _ = fixed_params
+        elif index == 31:
+            [Mabs, omega_m, H_0] = theta
+            bao_param = fixed_params
+        elif index == 32:
+            [bao_param, omega_m, H_0] = theta
+            Mabs = fixed_params
+        else:
+            raise ValueError('Introduce a valid index for LCDM!')
+        return [Mabs, bao_param, omega_m, H_0]
 
-    if index == 4:
-        [Mabs, L_bar, b, H_0] = theta
-        omega_m = fixed_params
-
-    if index == 41:
-        [Mabs, b, H_0, omega_m] = theta
-        L_bar = fixed_params
-
-    elif index == 31:
-        [L_bar, b, H_0] = theta
-        Mabs, omega_m = fixed_params
-
-    elif index == 32:
-        [Mabs, L_bar, H_0] = theta
-        b, omega_m = fixed_params
-
-    elif index == 33:
-        [Mabs, L_bar, b] = theta
-        H_0, omega_m = fixed_params
-
-    elif index == 34:
-        [Mabs, b, H_0] = theta
-        L_bar, omega_m = fixed_params
-    
-    elif index == 35:
-        [Mabs, H_0, omega_m] = theta
-        L_bar, b = fixed_params
-
-    elif index == 21:
-        [L_bar, b] = theta
-        Mabs, H_0, omega_m = fixed_params
-
-    elif index == 22:
-        [L_bar, H_0] = theta
-        Mabs, b, omega_m = fixed_params
-
-    elif index == 23:
-        [Mabs, L_bar] = theta
-        b, H_0, omega_m = fixed_params
-
-    elif index == 1:
-        L_bar = theta
-        Mabs, b, H_0, omega_m = fixed_params
-
-    return [Mabs, L_bar, b, H_0, omega_m]
-
+    elif (model == 'BETA' or model == 'GILA'):
+        if index == 5:
+            [Mabs, bao_param, L_bar, b, H_0] = theta
+            _ = fixed_params
+        elif index == 41:
+            [Mabs, bao_param, b, H_0] = theta
+            L_bar = fixed_params
+        elif index == 42:
+            [Mabs, L_bar, b, H_0] = theta
+            bao_param = fixed_params
+        elif index == 43:
+            [bao_param, L_bar, b, H_0] = theta
+            Mabs = fixed_params
+        elif index == 31:
+            [Mabs, b, H_0] = theta
+            bao_param, L_bar = fixed_params
+        elif index == 32:
+            [bao_param, b, H_0] = theta
+            Mabs, L_bar = fixed_params
+        else:
+            raise ValueError('Introduce a valid index for BETA or GILA!')
+        return [Mabs, bao_param, L_bar, b, H_0]
 
 def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
@@ -132,35 +120,36 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_AGN = 0
     chi2_H0 =  0
 
-    #[Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
-    #omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,omega_m)
+    if model == 'LCDM':
+        [Mabs, bao_param, omega_m, H_0] = all_parameters(theta, fixed_params, model, index)
+        
+        h = H_0/100
+        Omega_m_LCDM = omega_m / h**2 
 
-    [Mabs, L_bar, b, H_0, omega_m] = all_parameters(theta, fixed_params, index)
-    h = H_0/100
-    Omega_m_LCDM = omega_m / h**2 
-
-    if model != 'LCDM':
-        Omega_m_luisa = omega_CDM_to_luisa(b,L_bar,H_0,Omega_m_LCDM,model=model)
-
-        physical_params = [L_bar,b,H_0,omega_m]
-        zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
-                                    z_min=0, z_max=10, num_z_points=num_z_points,
-                                    all_analytic=all_analytic)
-    elif model == 'LCDM':
         zs_model = np.linspace(0, 10, num_z_points)
         Hs_model = H_LCDM(zs_model, Omega_m_LCDM, H_0)
-    
+
+
+    elif (model == 'BETA' or model == 'GILA'):
+        [Mabs, bao_param, L_bar, b, H_0] = all_parameters(theta, fixed_params, model, index)
+        
+        F_H0 = F_H(H_0, [LAMBDA, L/H_0, b, L_bar/H_0], model)
+        omega_m = F_H0 /(100**2) - OMEGA_R_0
+        h = H_0/100
+        Omega_m_LCDM = omega_m / h**2 
+        Omega_m_luisa = omega_CDM_to_luisa(b, L_bar, H_0, Omega_m_LCDM, model=model)
+
+        physical_params = [L_bar, b, H_0]
+        zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
+                                    z_min=0, z_max=10, num_z_points=num_z_points,
+                                    all_analytic=all_analytic)    
 
 
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
 
-    #if (dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
-    #    int_inv_Hs = cumtrapz(Hs_model**(-1), zs_model, initial=0)
-    #    int_inv_Hs_interpolado = interp1d(zs_model, int_inv_Hs)
-
     if (dataset_SN_plus_shoes != None or dataset_SN_plus != None or
-        dataset_SN != None or dataset_BAO != None or dataset_AGN != None):
+        dataset_SN != None or dataset_BAO != None or dataset_AGN != None or dataset_DESI != None):
         int_inv_Hs = cumtrapz(Hs_model**(-1), zs_model, initial=0)
         int_inv_Hs_interpol = interp1d(zs_model, int_inv_Hs)
 
@@ -208,22 +197,30 @@ def params_to_chi2(theta, fixed_params, index=0,
         chi2_BAO = np.sum(chies_BAO)
 
     if dataset_DESI != None:
-        wb_fid = 0.0224 #OJO ACA
-        rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
-
+        #if index == 42:
+        #    rd = bao_param        
+        #elif index == 31:
+        #    wb_fid = bao_param
+        #    rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
+        #elif index == 21:
+        #    wb_fid = 0.0224 #OJO ACA
+        #    rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
+        #else:
+        #    raise ValueError('Introduce a valid index for DESI!')
+        
+        rd = bao_param #if we want to use wb instead of rd, we need to change this line wirh the commented ones above       
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = set_1 
-        z_eff_2, data_dv_rd, errors_dv_rd = set_2
+        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, _ = set_1 
+        z_eff_2, data_dv_rd, errors_dv_rd, _ = set_2
 
         #index: 1 (DH)
         #index: 2 (DM)
         #index: 3 (DV)
 
         #DM_DH
-
         chi2_dm_dh = np.zeros(len(z_eff_1))
 
-        for j in range(len(z_eff_1)): # For each datatype
+        for j in range(len(chi2_dm_dh)): # For each datatype
 
             aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 1)
             dh_th = Ds_to_obs_final(aux, rd, 1) # dh/rd
@@ -233,21 +230,21 @@ def params_to_chi2(theta, fixed_params, index=0,
 
             delta_dm = dm_th - data_dm_rd[j]
             delta_dh = dh_th - data_dh_rd[j]
-
-            Cov_mat = np.array([errors_dm_rd[j]**2, errors_dm_rd[j]*errors_dm_rd[j]*rho[j]],[errors_dm_rd[j]*errors_dm_rd[j]*rho[j], errors_dh_rd[j]**2])
+            Cov_mat = np.array([[errors_dm_rd[j]**2, errors_dm_rd[j]*errors_dh_rd[j]*rho[j]],\
+                                [errors_dm_rd[j]*errors_dh_rd[j]*rho[j], errors_dh_rd[j]**2]])
             C_inv = np.linalg.inv(Cov_mat)
 
             delta = np.array([delta_dm, delta_dh]) #row vector
             transp = np.transpose(delta) #column vector
             aux_chi = np.dot(C_inv, transp) #column vector
-            chi2_dm_dh[j] = np.dot(aux_chi, aux) #scalar
+            chi2_dm_dh[j] = np.dot(delta, aux_chi) #scalar
 
         chi2_DESI_1 = np.sum(chi2_dm_dh)
 
         #DV
         dv_th_rd = np.zeros(len(z_eff_2))
-        for j in range(len(z_eff_2)): # For each datatype
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2, 3)
+        for j in range(len(dv_th_rd)): # For each datatype
+            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2[j], 3)
             dv_th_rd[j] = Ds_to_obs_final(aux, rd, 3) # dv/rd
 
         #Chi square calculation for each datatype (i)
@@ -278,7 +275,8 @@ def params_to_chi2(theta, fixed_params, index=0,
         DlH0_obs =  np.log10(3.24) - 25 + (logFx - gamma * logFuv - beta) / (2*gamma - 2)
 
         df_dgamma =  (-logFx+beta+logFuv) / (2*(gamma-1)**2)
-        eDlH0_cuad = (eFx**2 + gamma**2 * eFuv**2 + ebeta**2)/ (2*gamma - 2)**2 + (df_dgamma)**2 * egamma**2 #Square of the errors
+        eDlH0_cuad = (eFx**2 + gamma**2 * eFuv**2 + ebeta**2)/ (2*gamma - 2)**2 + \
+                     (df_dgamma)**2 * egamma**2 #Square of the errors
 
         chi2_AGN = chi2_sin_cov(DlH0_teo, DlH0_obs, eDlH0_cuad)
 
@@ -300,7 +298,8 @@ if __name__ == '__main__':
     path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
     os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
     from data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, \
-                    read_data_pantheon, read_data_chronometers, read_data_BAO, read_data_AGN
+                     read_data_pantheon, read_data_chronometers, read_data_BAO, \
+                     read_data_AGN, read_data_DESI
     
     # Pantheon plus + SH0ES
     os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
@@ -331,27 +330,35 @@ if __name__ == '__main__':
 
     # DESI
     os.chdir(path_git+'/fr_mcmc/source/DESI/')
-    ds_BAO = []
-    files_BAO = ['BAO_data_dh_dm.txt','BAO_data_dv.txt']
-    for i in range(2):
-        aux = read_data_BAO(files_BAO[i])
-        ds_BAO.append(aux)
+    ds_DESI = read_data_DESI('DESI_data_dh_dm.txt','DESI_data_dv.txt')
 
     # AGN
     os.chdir(path_git+'/fr_mcmc/source/AGN')
     ds_AGN = read_data_AGN('table3.dat')
 
-
-
     #%%
-    chi2 = params_to_chi2([-19.37, 0.9, 70], 1.0, index=32,
+    chi2_beta = params_to_chi2([-19.37, 140, 0.9, 1.1, 70], _, index=5,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
                     dataset_SN_plus = ds_SN_plus,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
                     dataset_BAO = ds_BAO,
-                    dataset_AGN = ds_AGN,
+                    #dataset_AGN = ds_AGN,
+                    dataset_DESI = ds_DESI,
+                    H0_Riess = True,
+                    model = 'BETA'
+                    )
+
+    chi2_lcdm = params_to_chi2([-19.37, 140, 0.143, 70], _, index=4,
+                    dataset_SN_plus_shoes = ds_SN_plus_shoes,
+                    dataset_SN_plus = ds_SN_plus,
+                    dataset_SN = ds_SN,
+                    dataset_CC = ds_CC,
+                    dataset_BAO = ds_BAO,
+                    #dataset_AGN = ds_AGN,
+                    dataset_DESI = ds_DESI,
                     H0_Riess = True,
                     model = 'LCDM'
                     )
-    print(chi2)
+
+    print(chi2_beta, chi2_lcdm)
