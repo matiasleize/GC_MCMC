@@ -19,7 +19,7 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 #For now only flat priors
 M_PRIOR: [-21, -18]
 BAO_PARAM_PRIOR: [120, 160]
-#L_BAR_PRIOR: [0.5, 1.5]
+L_BAR_PRIOR: [_, _]
 B_PRIOR: [0, 100] #Only read if MODEL is 'BETA' or 'GILA'
 H0_PRIOR: [60, 80]
 
