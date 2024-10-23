@@ -210,7 +210,7 @@ def params_to_chi2(theta, fixed_params, index=0,
         
         rd = bao_param #if we want to use wb instead of rd, we need to change this line wirh the commented ones above       
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, _ = set_1 
+        z_eff_1, data_dh_rd, errors_dh_rd, data_dm_rd, errors_dm_rd, rho, _ = set_1 
         z_eff_2, data_dv_rd, errors_dv_rd, _ = set_2
 
         #index: 1 (DH)
@@ -228,13 +228,13 @@ def params_to_chi2(theta, fixed_params, index=0,
             aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 2)
             dm_th = Ds_to_obs_final(aux, rd, 2) # dm/rd
 
-            delta_dm = dm_th - data_dm_rd[j]
             delta_dh = dh_th - data_dh_rd[j]
-            Cov_mat = np.array([[errors_dm_rd[j]**2, errors_dm_rd[j]*errors_dh_rd[j]*rho[j]],\
-                                [errors_dm_rd[j]*errors_dh_rd[j]*rho[j], errors_dh_rd[j]**2]])
+            delta_dm = dm_th - data_dm_rd[j]
+            Cov_mat = np.array([[errors_dh_rd[j]**2, errors_dh_rd[j]*errors_dm_rd[j]*rho[j]],\
+                                [errors_dh_rd[j]*errors_dm_rd[j]*rho[j], errors_dm_rd[j]**2]])
             C_inv = np.linalg.inv(Cov_mat)
 
-            delta = np.array([delta_dm, delta_dh]) #row vector
+            delta = np.array([delta_dh, delta_dm]) #row vector
             transp = np.transpose(delta) #column vector
             aux_chi = np.dot(C_inv, transp) #column vector
             chi2_dm_dh[j] = np.dot(delta, aux_chi) #scalar
