@@ -210,7 +210,7 @@ def params_to_chi2(theta, fixed_params, index=0,
         
         rd = bao_param #if we want to use wb instead of rd, we need to change this line wirh the commented ones above       
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dh_rd, errors_dh_rd, data_dm_rd, errors_dm_rd, rho, _ = set_1 
+        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, _ = set_1 
         z_eff_2, data_dv_rd, errors_dv_rd, _ = set_2
 
         #index: 1 (DH)
