@@ -177,14 +177,14 @@ def params_to_chi2(theta, fixed_params, index=0,
         for i in range(num_datasets): # For each datatype
             (z_data_BAO, valores_data, errores_data_cuad,wb_fid) = dataset_BAO[i]
             if i==0: #Da entry
-                rd = r_drag(Omega_m_luisa,H_0,wb_fid) # rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
+                rd = r_drag(Omega_m_LCDM,H_0,wb_fid) # rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = Ds_to_obs_final(distancias_teoricas, rd, i)
             else: #If not..
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
-                     rd = r_drag(Omega_m_luisa,H_0,wb_fid[j]) #rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
+                     rd = r_drag(Omega_m_LCDM,H_0,wb_fid[j]) #rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                      output_th[j] = Ds_to_obs_final(distancias_teoricas[j],rd,i)
             #Chi square calculation for each datatype (i)
             chies_BAO[i] = chi2_sin_cov(output_th,valores_data,errores_data_cuad)
