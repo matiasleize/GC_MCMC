@@ -153,24 +153,24 @@ def read_data_chronometers(file_chronometers):
     return z, h, dh
 
 def read_data_BAO(file_BAO):
-    z, data_values, errors_est, errors_sist, wb_fid = np.loadtxt(file_BAO,
-    usecols=(0,1,2,3,4), skiprows=1,unpack=True)
+    z, data_values, errors_est, errors_sist = np.loadtxt(file_BAO,
+    usecols=(0,1,2,3), skiprows=1,unpack=True)
     total_errors_cuad = errors_est**2 + errors_sist**2
-    return z, data_values, total_errors_cuad, wb_fid
+    return z, data_values, total_errors_cuad
 
 def read_data_DESI(file_DESI_1, file_DESI_2):
     # Read text with data
-    z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 = np.loadtxt(file_DESI_1,
-                                                                     usecols=(0,1,2,3,4,5,6),
+    z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = np.loadtxt(file_DESI_1,
+                                                                     usecols=(0,1,2,3,4,5),
                                                                      skiprows=1, unpack=True)
     
-    set_1 = z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, wb_fid_1 
+    set_1 = z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho 
 
     # Read text with data
-    z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 = np.loadtxt(file_DESI_2,
-                                                usecols=(0,1,2,3),
+    z_eff_2, data_dv_rd, errors_dv_rd = np.loadtxt(file_DESI_2,
+                                                usecols=(0,1,2),
                                                 skiprows=1, unpack=True)
-    set_2 = z_eff_2, data_dv_rd, errors_dv_rd, wb_fid_2 
+    set_2 = z_eff_2, data_dv_rd, errors_dv_rd
     return [set_1, set_2]
 
 

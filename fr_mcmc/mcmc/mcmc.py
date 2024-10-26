@@ -110,7 +110,7 @@ def run():
     # DESI
     if config.USE_DESI == True:    
         os.chdir(path_data + 'DESI/')
-        ds_DESI = read_data_DESI('DESI_data_dh_dm.txt','DESI_data_dv.txt')
+        ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')
         datasets.append('_DESI')
     else:
         ds_DESI = None

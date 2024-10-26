@@ -103,7 +103,7 @@ class datasets():
     def read_data_BAO(self, file_BAO):
 
         df = pd.read_csv(file_BAO,delim_whitespace=True,
-                        names = ['z', 'data_values', 'errors_est', 'errors_sist', 'wb_fid', 'type'],
+                        names = ['z', 'data_values', 'errors_est', 'errors_sist', 'type'],
                         skiprows=1)
         df['total_errors_cuad'] = df['errors_est'].to_xarray()**2 + df['errors_sist'].to_xarray()**2
         return df

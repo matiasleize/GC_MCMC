@@ -175,9 +175,8 @@ def params_to_chi2(theta, fixed_params, index=0,
         num_datasets=5
         chies_BAO = np.zeros(num_datasets)
         for i in range(num_datasets): # For each datatype
-            (z_data_BAO, valores_data, errores_data_cuad,wb_fid) = dataset_BAO[i]
+            (z_data_BAO, valores_data, errores_data_cuad) = dataset_BAO[i]
             if i==0: #Da entry
-                #rd = r_drag(Omega_m_LCDM,H_0,wb_fid) # rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                 rd = bao_param
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = Ds_to_obs_final(distancias_teoricas, rd, i)
@@ -185,7 +184,6 @@ def params_to_chi2(theta, fixed_params, index=0,
                 distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
-                    #rd = r_drag(Omega_m_LCDM,H_0,wb_fid[j]) #rd calculation #Question: Omega_m_luisa or Omega_m_LCDM?
                     rd = bao_param 
                     output_th[j] = Ds_to_obs_final(distancias_teoricas[j],rd,i)
             #Chi square calculation for each datatype (i)
@@ -199,8 +197,7 @@ def params_to_chi2(theta, fixed_params, index=0,
         chi2_BAO = np.sum(chies_BAO)
 
     if dataset_DESI != None:
-        #if index == 42:
-        #    rd = bao_param        
+    
         #elif index == 31:
         #    wb_fid = bao_param
         #    rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
@@ -212,8 +209,8 @@ def params_to_chi2(theta, fixed_params, index=0,
         
         rd = bao_param #if we want to use wb instead of rd, we need to change this line wirh the commented ones above       
         (set_1, set_2) = dataset_DESI
-        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho, _ = set_1 
-        z_eff_2, data_dv_rd, errors_dv_rd, _ = set_2
+        z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = set_1 
+        z_eff_2, data_dv_rd, errors_dv_rd = set_2
 
         #index: 1 (DH)
         #index: 2 (DM)
@@ -332,7 +329,7 @@ if __name__ == '__main__':
 
     # DESI
     os.chdir(path_git+'/fr_mcmc/source/DESI/')
-    ds_DESI = read_data_DESI('DESI_data_dh_dm.txt','DESI_data_dv.txt')
+    ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')m
 
     # AGN
     os.chdir(path_git+'/fr_mcmc/source/AGN')
