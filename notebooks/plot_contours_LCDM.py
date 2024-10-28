@@ -50,9 +50,12 @@ flat_samples_2 = samples_lcdm_2.get_chain(discard=discard, flat=True, thin=thin)
 flat_samples_3 = samples_lcdm_3.get_chain(discard=discard, flat=True, thin=thin)
 
 omega_r = 2.47e-5 
-L_bar = 0.90
-names_LCDM = ['M_{{abs}}','H_0','\omega_m','\Omega_{{m}}^{{LCDM}}','\Omega_{{\\Lambda}}^{{LCDM}}']
-labels_LCDM = names_LCDM
+
+names_LCDM_1 = ['M_{{abs}}','H_0','\omega_m','\Omega_{{m}}^{{LCDM}}','\Omega_{{\\Lambda}}^{{LCDM}}']
+labels_LCDM_1 = names_LCDM_1
+names_LCDM_23 = ['M_{{abs}}','r_d','H_0','\omega_m','\Omega_{{m}}^{{LCDM}}','\Omega_{{\\Lambda}}^{{LCDM}}']
+labels_LCDM_23 = names_LCDM_23
+
 
 #LCDM MODEL
 M_abs = flat_samples_1[:,0]
@@ -71,7 +74,7 @@ chains_lcdm_1[:,3] = Omega_m_lcdm
 chains_lcdm_1[:,4] = Omega_L_lcdm
 
 
-samples1 = MCSamples(samples=chains_lcdm_1, names=names_LCDM, labels=names_LCDM)
+samples1 = MCSamples(samples=chains_lcdm_1, names=names_LCDM_1, labels=names_LCDM_1)
 samples1 = samples1.copy(label=r'Lowest-order with $0.3\sigma$ smoothing',
 			settings={'mult_bias_correction_order':0,'smooth_scale_2D':0.3,
 			'smooth_scale_1D':0.3})
@@ -87,14 +90,15 @@ Omega_r_lcdm = omega_r / (H0/100)**2
 Omega_m_lcdm = omega_m / (H0/100)**2
 Omega_L_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm
 
-chains_lcdm_2 = np.zeros((len(M_abs),5))
+chains_lcdm_2 = np.zeros((len(M_abs),6))
 chains_lcdm_2[:,0] = M_abs
-chains_lcdm_2[:,1] = H0
-chains_lcdm_2[:,2] = omega_m
-chains_lcdm_2[:,3] = Omega_m_lcdm
-chains_lcdm_2[:,4] = Omega_L_lcdm
+chains_lcdm_2[:,1] = bao_param
+chains_lcdm_2[:,2] = H0
+chains_lcdm_2[:,3] = omega_m
+chains_lcdm_2[:,4] = Omega_m_lcdm
+chains_lcdm_2[:,5] = Omega_L_lcdm
 
-samples2 = MCSamples(samples=chains_lcdm_2, names=names_LCDM, labels=names_LCDM)
+samples2 = MCSamples(samples=chains_lcdm_2, names=names_LCDM_23, labels=names_LCDM_23)
 samples2 = samples2.copy(label=r'Lowest-order with $0.3\sigma$ smoothing',
 			settings={'mult_bias_correction_order':0,'smooth_scale_2D':0.3,
 			'smooth_scale_1D':0.3})
@@ -109,14 +113,16 @@ Omega_r_lcdm = omega_r / (H0/100)**2
 Omega_m_lcdm = omega_m / (H0/100)**2
 Omega_L_lcdm = 1 - Omega_m_lcdm - Omega_r_lcdm
 
-chains_lcdm_3 = np.zeros((len(M_abs),5))
+chains_lcdm_3 = np.zeros((len(M_abs),6))
 chains_lcdm_3[:,0] = M_abs
-chains_lcdm_3[:,1] = H0
-chains_lcdm_3[:,2] = omega_m
-chains_lcdm_3[:,3] = Omega_m_lcdm
-chains_lcdm_3[:,4] = Omega_L_lcdm
+chains_lcdm_3[:,1] = bao_param
+chains_lcdm_3[:,2] = H0
+chains_lcdm_3[:,3] = omega_m
+chains_lcdm_3[:,4] = Omega_m_lcdm
+chains_lcdm_3[:,5] = Omega_L_lcdm
 
-samples3 = MCSamples(samples=chains_lcdm_3, names=names_LCDM, labels=names_LCDM)
+
+samples3 = MCSamples(samples=chains_lcdm_3, names=names_LCDM_23, labels=names_LCDM_23)
 samples3 = samples3.copy(label=r'Lowest-order with $0.3\sigma$ smoothing',
 			settings={'mult_bias_correction_order':0,'smooth_scale_2D':0.3,
 			'smooth_scale_1D':0.3})
@@ -127,8 +133,17 @@ g.settings.legend_fontsize = 18
 g.settings.axes_fontsize = 15
 g.settings.axes_labelsize = 18
 g.triangle_plot([samples1, samples2, samples3],
-				filled=True, params=names_LCDM,
-				#contour_colors=color,
+				filled=True, params=names_LCDM_1,
 				contour_lws=1,
 				legend_labels=['CC+PPS','CC+PPS+BAO','CC+PPS+DESI'])
-g.export('/home/mleize/Documents/Repos/GILA_MCMC/notebooks/figures/triangle_plot_lcdm.pdf')
+g.export('/home/mleize/Documents/Repos/GILA_MCMC/notebooks/figures/triangle_plot_lcdm_1.pdf')
+
+g = plots.get_subplot_plotter()
+g.settings.legend_fontsize = 18
+g.settings.axes_fontsize = 15
+g.settings.axes_labelsize = 18
+g.triangle_plot([samples2, samples3, samples1],
+				filled=True, params=names_LCDM_23,
+				contour_lws=1,
+				legend_labels=['CC+PPS+BAO','CC+PPS+DESI','CC+PPS'])
+g.export('/home/mleize/Documents/Repos/GILA_MCMC/notebooks/figures/triangle_plot_lcdm_2.pdf')
