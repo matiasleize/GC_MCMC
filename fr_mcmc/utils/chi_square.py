@@ -329,7 +329,7 @@ if __name__ == '__main__':
 
     # DESI
     os.chdir(path_git+'/fr_mcmc/source/DESI/')
-    ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')m
+    ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')
 
     # AGN
     os.chdir(path_git+'/fr_mcmc/source/AGN')
