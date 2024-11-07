@@ -1,0 +1,35 @@
+#Example of a configuration file for the Hu-Sawicki model.
+USE_PPLUS_SHOES: False
+USE_PPLUS: False
+USE_SN: False
+USE_CC: False
+USE_BAO: False
+USE_DESI: True
+USE_AGN: False
+USE_H0: False
+
+MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
+WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
+FIXED_PARAMS:  [_, 0.90]
+LOG_LIKELIHOOD_INDEX: 32 #See docs/parameters_protocol.md
+NUM_WALKERS: 12
+MAX_SAMPLES: 20000 #Maximum number of samples
+WITNESS_FREQ: 1 #Frequency in which witness is refreshed
+
+#For now only flat priors
+M_PRIOR: [-21, -18]
+BAO_PARAM_PRIOR: [120, 160]
+L_BAR_PRIOR: [_, _]
+B_PRIOR: [0, 100] #Only read if MODEL is 'BETA' or 'GILA'
+H0_PRIOR: [60, 80]
+
+#For the mean values if needed:
+#They have to have the same length of the number of free params.
+GUEST: [140, 1, 70]
+BOUNDS: [[130,150], [0, 100], [60, 80]]
+
+#Directory in which output files are stored
+OUTPUT_DIR: '/GILA-output/L=0.90/gila_model/'
+
+#Other things that are not in use:
+#DATA_PATH: './data'
