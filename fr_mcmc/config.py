@@ -15,21 +15,40 @@ os.chdir(path_git + '/configs/')
 
 ##yml_file = 'config_LCDM_3p_PPS_CC.yml'
 #yml_file = 'config_LCDM_4p_PPS_CC_DESI.yml'
-yml_file = 'config_LCDM_4p_PPS_CC_BAO.yml'
+#yml_file = 'config_LCDM_4p_PPS_CC_BAO.yml'
 
 ##yml_file = 'config_BETA_3p_PPS_CC_0.85.yml'
-##yml_file = 'config_BETA_3p_PPS_CC_0.90.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_0.90.yml'
 ##yml_file = 'config_BETA_3p_PPS_CC_0.95.yml'
 #yml_file = 'config_BETA_4p_PPS_CC_DESI_0.85.yml'
 #yml_file = 'config_BETA_4p_PPS_CC_DESI_0.90.yml'
 #yml_file = 'config_BETA_4p_PPS_CC_DESI_0.95.yml'
+#yml_file = 'config_BETA_4p_PPS_CC_BAO_0.90.yml'
 
 ##yml_file = 'config_GILA_3p_PPS_CC_0.85.yml'
-##yml_file = 'config_GILA_3p_PPS_CC_0.90.yml'
+#yml_file = 'config_GILA_3p_PPS_CC_0.90.yml'
 ##yml_file = 'config_GILA_3p_PPS_CC_0.95.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_DESI_0.85.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_DESI_0.90.yml'
 #yml_file = 'config_GILA_4p_PPS_CC_DESI_0.95.yml'
+#yml_file = 'config_GILA_4p_PPS_CC_BAO_0.90.yml'
+
+#Using BAO bestfit (not useful anymore)
+#yml_file = 'config_LCDM_3p_PPS_CC_DESI.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_DESI_0.90.yml'
+#yml_file = 'config_GILA_3p_PPS_CC_DESI_0.90.yml'
+
+#DESI data separately
+#yml_file = 'config_LCDM_3p_DESI.yml'
+#yml_file = 'config_BETA_3p_DESI_0.90.yml'
+#yml_file = 'config_GILA_3p_DESI_0.90.yml'
+
+#PPS data separately
+#yml_file = 'config_LCDM_3p_PPS.yml'
+#yml_file = 'config_BETA_3p_PPS_0.90.yml'
+yml_file = 'config_GILA_3p_PPS_0.90.yml'
+
+
 
 with open(yml_file, "r") as ymlfile:
     full_cfg = yaml.safe_load(ymlfile)
