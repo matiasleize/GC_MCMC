@@ -76,8 +76,8 @@ def integrator(physical_params, model, num_z_points=int(10**5),
                     rtol=rtol, atol=atol, method=method)
         
 
-    #assert len(sol.t)==num_z_points, 'Something is wrong with the integration!'
-    #assert np.all(zs_int==sol.t), 'Not all the values of z coincide with the ones that were required!'
+    assert len(sol.t)==num_z_points, 'Something is wrong with the integration!'
+    assert np.all(zs_int==sol.t), 'Not all the values of z coincide with the ones that were required!'
 
     # Calculate the Hubble parameter
     zs_final = sol.t

@@ -140,10 +140,13 @@ def params_to_chi2(theta, fixed_params, index=0,
         Omega_m_luisa = omega_CDM_to_luisa(b, L_bar, H_0, Omega_m_LCDM, model=model)
 
         physical_params = [L_bar, b, H_0]
-        zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
-                                    z_min=0, z_max=10, num_z_points=num_z_points,
-                                    all_analytic=all_analytic)    
-
+        try:
+            zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
+                                        z_min=0, z_max=10, num_z_points=num_z_points,
+                                        all_analytic=all_analytic)    
+        except Exception as e:
+            # If integration fails, reject the step
+            return -np.inf
 
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
         Hs_interpolado = interp1d(zs_model, Hs_model)
