@@ -10,7 +10,7 @@ USE_H0: False
 
 MODEL: 'BETA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: 0.95
+FIXED_PARAMS: [_,0.95]
 LOG_LIKELIHOOD_INDEX: 31 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 20000 #Maximum number of samples
@@ -19,7 +19,7 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 #For now only flat priors
 M_PRIOR: [-21, -18]
 #BAO_PARAM_PRIOR: [120, 160]
-#L_BAR_PRIOR: [0.5, 1.5]
+L_BAR_PRIOR: [_, _]
 B_PRIOR: [0, 100] #Only read if MODEL is 'BETA' or 'GILA'
 H0_PRIOR: [60, 80]
 

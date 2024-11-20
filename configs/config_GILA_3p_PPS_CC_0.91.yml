@@ -8,9 +8,9 @@ USE_DESI: False
 USE_AGN: False
 USE_H0: False
 
-MODEL: 'BETA' #Choose between 'LCDM', or 'GILA'
+MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: 0.85
+FIXED_PARAMS: [_,0.91]
 LOG_LIKELIHOOD_INDEX: 31 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 20000 #Maximum number of samples
@@ -19,7 +19,7 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 #For now only flat priors
 M_PRIOR: [-21, -18]
 #BAO_PARAM_PRIOR: [120, 160]
-#L_BAR_PRIOR: [0.5, 1.5]
+L_BAR_PRIOR: [_, _]
 B_PRIOR: [0, 100] #Only read if MODEL is 'BETA' or 'GILA'
 H0_PRIOR: [60, 80]
 
@@ -29,7 +29,7 @@ GUEST: [-19.352, 1, 70]
 BOUNDS: [[-21, -18], [0, 100], [60, 80]]
 
 #Directory in which output files are stored
-OUTPUT_DIR: '/GILA-output/L=0.85/beta_model/'
+OUTPUT_DIR: '/GILA-output/L=0.91/gila_model/'
 
 #Other things that are not in use:
 #DATA_PATH: './data'

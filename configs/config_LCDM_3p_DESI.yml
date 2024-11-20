@@ -18,15 +18,15 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 
 #For now only flat priors
 M_PRIOR: [-21, -18]
-BAO_PARAM_PRIOR: [130, 200]
+BAO_PARAM_PRIOR: [110, 200]
 OMEGA_M_PRIOR: [0.1, 0.3]
-H0_PRIOR: [60, 80]
+H0_PRIOR: [60, 120]
 
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
 GUEST: [145, 0.143, 70]
-BOUNDS: [[130, 200], [0.1,0.3], [60, 80]]
+BOUNDS: [[110, 200], [0.1,0.3], [60, 120]]
 
 #Directory in which output files are stored
 OUTPUT_DIR: '/GILA-output/LCDM/'
