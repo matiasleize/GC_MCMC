@@ -10,7 +10,7 @@ USE_H0: False
 
 MODEL: 'GILA' #Choose between 'LCDM', or 'GILA'
 WITNESS_NUM: 1 #Suggestion: (model_number) + (datasets_number) 
-FIXED_PARAMS: [_,0.89]
+FIXED_PARAMS: [_, 0.89]
 LOG_LIKELIHOOD_INDEX: 31 #See docs/parameters_protocol.md
 NUM_WALKERS: 12
 MAX_SAMPLES: 20000 #Maximum number of samples

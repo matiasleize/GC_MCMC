@@ -14,6 +14,17 @@ os.chdir(path_git + '/configs/')
 #Here you have to specify the the name of your .yml file
 
 ##yml_file = 'config_LCDM_3p_PPS_CC.yml'
+
+#yml_file = 'config_BETA_3p_PPS_CC_0.89.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_0.90.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_0.91.yml'
+
+yml_file = 'config_GILA_3p_PPS_CC_0.89.yml'
+#yml_file = 'config_GILA_3p_PPS_CC_0.90.yml'
+#yml_file = 'config_GILA_3p_PPS_CC_0.91.yml'
+
+#################################################
+##yml_file = 'config_LCDM_3p_PPS_CC.yml'
 #yml_file = 'config_LCDM_4p_PPS_CC_DESI.yml'
 #yml_file = 'config_LCDM_4p_PPS_CC_BAO.yml'
 
@@ -46,7 +57,7 @@ os.chdir(path_git + '/configs/')
 #PPS data separately
 #yml_file = 'config_LCDM_3p_PPS.yml'
 #yml_file = 'config_BETA_3p_PPS_0.90.yml'
-yml_file = 'config_GILA_3p_PPS_0.90.yml'
+#yml_file = 'config_GILA_3p_PPS_0.90.yml'
 
 
 
