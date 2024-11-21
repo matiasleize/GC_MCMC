@@ -38,26 +38,23 @@ def read_data_pantheon_plus_shoes(file_pantheon_plus,file_pantheon_plus_shoes_co
     sn=len(df['zHD'])
     #Ccov=Ccov.reshape(sn,sn)
 
-    f = open(file_pantheon_plus_shoes_cov)
-    line = f.readline()
-    n = int(len(zhd))
-    Cov_PANplus = np.zeros((n,n))
-    ii = -1
-    jj = -1
-    mine = 999
-    maxe = -999
-    for i in range(sn):
+    #f = open(file_pantheon_plus_shoes_cov)
+    with open(file_pantheon_plus_shoes_cov) as f:
+        #line = f.readline()
+        n = int(len(zhd))
+        Cov_PANplus = np.zeros((n,n))
+        ii = -1
         jj = -1
-        if ww[i]:
-            ii += 1
-        for j in range(sn):
-            if ww[j]:
-                jj += 1
-            val = float(f.readline())
+        for i in range(sn):
+            jj = -1
             if ww[i]:
+                ii += 1
+            for j in range(sn):
                 if ww[j]:
+                    jj += 1
+                val = float(f.readline())
+                if ww[i] and ww[j]:
                     Cov_PANplus[ii,jj] = val
-    f.close()
 
     #.. and finally we invert it
     Cinv = np.linalg.inv(Cov_PANplus)
@@ -204,7 +201,7 @@ if __name__ == '__main__':
 
     #%% Pantheon plus + SH0ES
     os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
-    zhd, zhel, Cinv, mb, is_cal = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
+    zhd, zhel, mb, ceph_dist, Cinv, is_cal = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
                                     'Pantheon+SH0ES_STAT+SYS.cov')
 
     #%% Pantheon
@@ -222,7 +219,7 @@ if __name__ == '__main__':
     #%% BAO
     os.chdir(path_git+'/fr_mcmc/source/BAO')
     file_BAO='BAO_data_da.txt'
-    z, data_values, data_error_cuad, _ = read_data_BAO(file_BAO)
+    z, data_values, total_errors_cuad = read_data_BAO(file_BAO)
     
     #%%
     os.chdir(path_git+'/fr_mcmc/source/BAO')
