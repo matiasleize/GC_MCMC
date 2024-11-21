@@ -38,23 +38,25 @@ def read_data_pantheon_plus_shoes(file_pantheon_plus,file_pantheon_plus_shoes_co
     sn=len(df['zHD'])
     #Ccov=Ccov.reshape(sn,sn)
 
-    #f = open(file_pantheon_plus_shoes_cov)
-    with open(file_pantheon_plus_shoes_cov) as f:
-        #line = f.readline()
-        n = int(len(zhd))
-        Cov_PANplus = np.zeros((n,n))
-        ii = -1
+    f = open(file_pantheon_plus_shoes_cov)
+    line = f.readline()
+    n = int(len(zhd))
+    Cov_PANplus = np.zeros((n,n))
+    ii = -1
+    jj = -1
+    mine = 999
+    maxe = -999
+    for i in range(sn):
         jj = -1
-        for i in range(sn):
-            jj = -1
-            if ww[i]:
-                ii += 1
-            for j in range(sn):
-                if ww[j]:
-                    jj += 1
-                val = float(f.readline())
-                if ww[i] and ww[j]:
-                    Cov_PANplus[ii,jj] = val
+        if ww[i]:
+            ii += 1
+        for j in range(sn):
+            if ww[j]:
+                jj += 1
+            val = float(f.readline())
+            if ww[i] and ww[j]:
+                Cov_PANplus[ii,jj] = val
+    f.close()
 
     #.. and finally we invert it
     Cinv = np.linalg.inv(Cov_PANplus)
