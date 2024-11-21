@@ -4,29 +4,38 @@ Run MCMC analyses and calculations of the physical parameters of the models.
 Parameter order in this file: Mabs,L_bar,b,H_0,n
 '''
 
-import numpy as np; #np.random.seed(42)
+import numpy as np
 import emcee
 import yaml
 from scipy.optimize import minimize, basinhopping
 
 import os
 import git
+
+# Get the root directory of the Git repository
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 path_datos_global = os.path.dirname(path_git)
 
-# Obs: To import packages this is the sintaxis to change paths:
-os.chdir(path_git); os.sys.path.append('./fr_mcmc/')
+# Add necessary paths to sys.path
+os.sys.path.extend([
+    os.path.join(path_git, 'fr_mcmc'),
+    os.path.join(path_git, 'fr_mcmc', 'plotting')
+])
+# Get the root directory of the Git repository
 from utils.sampling import MCMC_sampler
-from utils.data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, read_data_pantheon,\
-                       read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
+from utils.data import (
+    read_data_pantheon_plus_shoes, read_data_pantheon_plus, read_data_pantheon,
+    read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
+)
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
 
 from config import cfg as config
-os.chdir(path_git); os.sys.path.append('./fr_mcmc/plotting/')
 import analysis
 
-os.chdir(path_git + '/fr_mcmc/mcmc/')
+# Change to the mcmc directory
+os.chdir(os.path.join(path_git, 'fr_mcmc', 'mcmc'))
+
 def run():
     output_dir = config.OUTPUT_DIR
     model = config.MODEL
@@ -35,32 +44,33 @@ def run():
     num_params = int(str(index)[0])
     all_analytic = config.ALL_ANALYTIC
 
-    witness_file = 'witness_' + str(config.WITNESS_NUM) + '.txt'
+    witness_file = f'witness_{config.WITNESS_NUM}.txt'
     
     bnds = config.BOUNDS
     if model == 'LCDM':
         [omega_m_min, omega_m_max] = config.OMEGA_M_PRIOR
         [H0_min, H0_max] = config.H0_PRIOR
 
-    elif (model == 'GILA' or model =='BETA'): 
+    elif model in ['GILA', 'BETA']:
         [L_bar_min, L_bar_max] = config.L_BAR_PRIOR
         [b_min, b_max] = config.B_PRIOR
         [H0_min, H0_max] = config.H0_PRIOR
 
 
-    if (config.USE_BAO == True or config.USE_DESI == True):
+    if config.USE_BAO or config.USE_DESI:
         [bao_param_min, bao_param_max] = config.BAO_PARAM_PRIOR
 
-    if (config.USE_SN == True or config.USE_PPLUS  == True or config.USE_PPLUS_SHOES  == True):
+    if config.USE_SN or config.USE_PPLUS or config.USE_PPLUS_SHOES:
         [M_min, M_max] = config.M_PRIOR
 
     #%% Import cosmological data
-    path_data = path_git + '/fr_mcmc/source/'
+    path_data = os.path.join(path_git, 'fr_mcmc', 'source')
+    
     datasets = []
 
     # Pantheon Plus + Shoes
     if config.USE_PPLUS_SHOES == True:
-        os.chdir(path_data + 'Pantheon_plus_shoes/')
+        os.chdir(os.path.join(path_data, 'Pantheon_plus_shoes'))
 
         ds_SN_plus_shoes = read_data_pantheon_plus_shoes('Pantheon+SH0ES.dat',
                                     'Pantheon+SH0ES_STAT+SYS.cov')
@@ -70,7 +80,8 @@ def run():
 
     # Pantheon Plus
     if config.USE_PPLUS == True:
-        os.chdir(path_data + 'Pantheon_plus_shoes/')
+        os.chdir(os.path.join(path_data, 'Pantheon_plus_shoes'))
+
         ds_SN_plus = read_data_pantheon_plus('Pantheon+SH0ES.dat',
                                 'covmat_pantheon_plus_only.npz')        
         datasets.append('_PP')
@@ -79,7 +90,8 @@ def run():
 
     # Supernovae type IA
     if config.USE_SN == True:
-        os.chdir(path_data + 'Pantheon/')
+        os.chdir(os.path.join(path_data, 'Pantheon'))
+
         ds_SN = read_data_pantheon('lcparam_full_long_zhel.txt')
         datasets.append('_SN')
     else:
@@ -87,7 +99,8 @@ def run():
 
     # Cosmic Chronometers
     if config.USE_CC == True:
-        os.chdir(path_data + 'CC/')
+        os.chdir(os.path.join(path_data, 'CC'))
+
         ds_CC = read_data_chronometers('chronometers_data.txt')
         datasets.append('_CC')
     else:
@@ -95,7 +108,8 @@ def run():
 
     # BAO
     if config.USE_BAO == True:    
-        os.chdir(path_data + 'BAO/')
+        os.chdir(os.path.join(path_data, 'BAO'))
+
         ds_BAO = []
         archivos_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
                         'BAO_data_dv.txt','BAO_data_H.txt']
@@ -109,7 +123,8 @@ def run():
 
     # DESI
     if config.USE_DESI == True:    
-        os.chdir(path_data + 'DESI/')
+        os.chdir(os.path.join(path_data, 'DESI'))
+
         ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')
         datasets.append('_DESI')
     else:
@@ -117,7 +132,7 @@ def run():
 
     # AGN
     if config.USE_AGN == True:
-        os.chdir(path_data + 'AGN/')
+        os.chdir(os.path.join(path_data, 'AGN'))
         ds_AGN = read_data_AGN('table3.dat')
         datasets.append('_AGN')
     else:
@@ -165,7 +180,7 @@ def run():
                 if (bao_param_min < bao_param < bao_param_max and omega_m_min < omega_m < omega_m_max and H0_min < H0 < H0_max):
                     return 0.0
 
-        elif (model == 'GILA' or model =='BETA'): 
+        elif model in ['GILA', 'BETA']:
             if index == 5:
                 M, bao_param, L_bar, b, H0 = theta
                 if (M_min < M < M_max and bao_param_min < bao_param < bao_param_max and L_bar_min < L_bar < L_bar_max and b_min < b < b_max and H0_min < H0 < H0_max):
@@ -199,13 +214,14 @@ def run():
             return -np.inf
         return lp + ll(theta)
 
-    filename = 'sample_' + model + datasets + '_' + str(num_params) + 'params'
+    filename = f'sample_{model}{datasets}_{num_params}params'
+
+    #output_directory = os.path.join(path_datos_global, output_dir, filename) #No se porque no anda..
     output_directory = path_datos_global + output_dir + filename
 
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
-
-    filename_ml = 'maximun_likelihood' + '_' + model + datasets + '_' + str(num_params) + 'params'
+    filename_ml = f'maximun_likelihood_{model}{datasets}_{num_params}params'
     
     # If exist, import mean values of the free parameters. If not, calculate, save and load calculation.
     os.chdir(output_directory)
@@ -224,7 +240,7 @@ def run():
         #np.savez(filename_ml, sol=initial) #Use ansatz as minimun
         with np.load(filename_ml + '.npz') as data:
             sol = data['sol']
-    print('Maximun likelihood corresponds to the parameters: {}'.format(sol))
+    print(f'Maximun likelihood corresponds to the parameters: {sol}')
 
     # Define initial values of each chain using the minimun 
     # values of the chi square.
@@ -239,7 +255,8 @@ def run():
                 save_path = output_directory)
 
     # If it corresponds, derive physical parameters
-    if index == 41 or index == 35:
+
+    if index in [41, 35]:
         os.chdir(output_directory)
  
         textfile_witness = open(witness_file,'a')
