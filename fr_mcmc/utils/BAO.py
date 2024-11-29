@@ -26,30 +26,30 @@ from scipy.interpolate import interp1d
 
 
 
-#Parameters order: omega_m,b,H_0,n
+#Parameters order: Omega_m,b,H_0,n
 
-def zdrag(omega_m,H_0,wb=0.0225):
+def zdrag(Omega_m,H_0,wb=0.0225):
     '''
     wb = 0.0222383 #Planck
     wb = 0.0225 #BBN
     '''
     h = H_0/100
-    b1 = 0.313*(omega_m*h**2)**(-0.419)*(1+0.607*(omega_m*h**2)**(0.6748))
-    b2 = 0.238*(omega_m*h**2)**0.223
-    zd = (1291*(omega_m*h**2)**0.251) * (1+b1*wb**b2) /(1+0.659*(omega_m*h**2)**0.828)
+    b1 = 0.313*(Omega_m*h**2)**(-0.419)*(1+0.607*(Omega_m*h**2)**(0.6748))
+    b2 = 0.238*(Omega_m*h**2)**0.223
+    zd = (1291*(Omega_m*h**2)**0.251) * (1+b1*wb**b2) /(1+0.659*(Omega_m*h**2)**0.828)
     #zd =1060.31
     return zd
 
-def r_drag_viejo(omega_m,H_0,wb = 0.0225, int_z=True): #wb x default tomo el de BBN.
+def r_drag_viejo(Omega_m,H_0,wb = 0.0225, int_z=True): #wb x default tomo el de BBN.
     #rd calculation:
     h = H_0/100
-    zd = zdrag(omega_m,H_0)
+    zd = zdrag(Omega_m,H_0)
     #R_bar = 31500 * wb * (2.726/2.7)**(-4)
     R_bar = wb * 10**5 / 2.473
 
     #Logarithmic integration
     zs_int_log = np.logspace(np.log10(zd),13,int(10**5))
-    H_int_log = H_LCDM_rad(zs_int_log,omega_m,H_0)
+    H_int_log = H_LCDM_rad(zs_int_log,Omega_m,H_0)
 
     integrando_log = c_light_km / (H_int_log * np.sqrt(3*(1 + R_bar*(1+zs_int_log)**(-1))))
 
@@ -66,20 +66,20 @@ def integrand(z, Om_m_0, H_0, wb):
     return c_light_km/(H * (3*(1 + R_bar*(1+z)**(-1)))**(1/2))
 
 
-def r_drag(omega_m,H_0,wb = 0.0225, int_z=True): #wb of BBN as default.
+def r_drag(Omega_m,H_0,wb = 0.0225, int_z=True): #wb of BBN as default.
     #rd calculation:
     h = H_0/100
-    zd = zdrag(omega_m,H_0)
+    zd = zdrag(Omega_m,H_0)
     #R_bar = 31500 * wb * (2.726/2.7)**(-4)
     R_bar = wb * 10**5 / 2.473
 
 
     #zd calculation:
-    zd = zdrag(omega_m, H_0)
+    zd = zdrag(Omega_m, H_0)
     # zd = 1000
     R_bar = wb * 10**5 / 2.473
 
-    rd_log, _ = quad(lambda z: integrand(z, omega_m, H_0, wb), zd, np.inf)
+    rd_log, _ = quad(lambda z: integrand(z, Omega_m, H_0, wb), zd, np.inf)
 
     return rd_log
 
@@ -132,7 +132,7 @@ if __name__ == '__main__':
         aux = read_data_BAO(archivo_BAO[i])
         dataset_BAO.append(aux)
 
-    [omega_m,b,H_0] = [0.28,1,66.012]
-    theta = [omega_m,b,H_0]
+    [Omega_m,b,H_0] = [0.28,1,66.012]
+    theta = [Omega_m,b,H_0]
     params_to_chi2_BAO(theta,1, dataset_BAO,model='EXP')
-    r_drag(omega_m,H_0,wb = 0.0225)
+    r_drag(Omega_m,H_0,wb = 0.0225)
