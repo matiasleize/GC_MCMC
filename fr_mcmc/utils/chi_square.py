@@ -87,7 +87,8 @@ def all_parameters(theta, fixed_params, model, index):
 def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
                    dataset_SN=None, dataset_CC=None,
-                   dataset_BAO=None, dataset_DESI=None, dataset_AGN=None, H0_Riess=False,
+                   dataset_BAO=None, dataset_DESI=None, dataset_BAO_full=None,
+                   dataset_AGN=None, H0_Riess=False,
                    num_z_points=int(10**5), model='LCDM',n=1,
                    nuisance_2 = False, enlarged_errors=False,
                    all_analytic=False):
@@ -102,6 +103,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     dataset_CC:
     dataset_BAO: This data goes up to z=7.4 aproximately. Don't integrate with z less than that!
     dataset_DESI:
+    dataset_BAO_full:
     dataset_AGN:
     H0_Riess:
 
@@ -117,6 +119,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_CC = 0
     chi2_BAO = 0
     chi2_DESI = 0
+    chi2_BAO_full = 0
     chi2_AGN = 0
     chi2_H0 =  0
 
@@ -148,49 +151,51 @@ def params_to_chi2(theta, fixed_params, index=0,
             # If integration fails, reject the step
             return -np.inf
 
-    if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or dataset_AGN != None):
-        Hs_interpolado = interp1d(zs_model, Hs_model)
+    if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or 
+        dataset_BAO_full != None or dataset_AGN != None):
+        Hs_interp = interp1d(zs_model, Hs_model)
 
     if (dataset_SN_plus_shoes != None or dataset_SN_plus != None or
-        dataset_SN != None or dataset_BAO != None or dataset_AGN != None or dataset_DESI != None):
+        dataset_SN != None or dataset_BAO != None or dataset_AGN != None or 
+        dataset_DESI != None or dataset_BAO_full != None):
         int_inv_Hs = cumtrapz(Hs_model**(-1), zs_model, initial=0)
-        int_inv_Hs_interpol = interp1d(zs_model, int_inv_Hs)
+        int_inv_Hs_interp = interp1d(zs_model, int_inv_Hs)
 
     if dataset_SN_plus_shoes != None:
         zhd, zhel, mb, mu_shoes, Cinv, is_cal = dataset_SN_plus_shoes #Import the data
         muobs = mb - Mabs
-        muth_num = aparent_magnitude_th(int_inv_Hs_interpol, zhd, zhel) #Numeric prediction of mu
+        muth_num = aparent_magnitude_th(int_inv_Hs_interp, zhd, zhel) #Numeric prediction of mu
         muth = muth_num*(-is_cal + 1) + mu_shoes*(is_cal) #Merge num predicion with mu_shoes
         chi2_SN = chi2_supernovae(muth, muobs, Cinv)
 
     if dataset_SN != None:
         zcmb, zhel, Cinv, mb = dataset_SN #Import the data
-        muth = aparent_magnitude_th(int_inv_Hs_interpol, zcmb, zhel)
+        muth = aparent_magnitude_th(int_inv_Hs_interp, zcmb, zhel)
         muobs =  mb - Mabs
         chi2_SN = chi2_supernovae(muth, muobs, Cinv)
 
     if dataset_CC != None:
         z_data, H_data, dH = dataset_CC #Import the data
-        H_teo = Hs_interpolado(z_data)
+        H_teo = Hs_interp(z_data)
         chi2_CC = chi2_sin_cov(H_teo, H_data, dH**2)
-
+    
     if dataset_BAO != None:
         num_datasets=5
         chies_BAO = np.zeros(num_datasets)
         for i in range(num_datasets): # For each datatype
-            (z_data_BAO, valores_data, errores_data_cuad) = dataset_BAO[i]
+            (z_data_BAO, data_values, data_squared_errors) = dataset_BAO[i]
             if i==0: #Da entry
                 rd = bao_param
-                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
-                output_th = Ds_to_obs_final(distancias_teoricas, rd, i)
+                theoretical_distances = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_data_BAO, i)
+                output_th = Ds_to_obs_final(theoretical_distances, rd, i)
             else: #If not..
-                distancias_teoricas = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_data_BAO, i)
+                theoretical_distances = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_data_BAO, i)
                 output_th = np.zeros(len(z_data_BAO))
                 for j in range(len(z_data_BAO)): # For each datatype
                     rd = bao_param 
-                    output_th[j] = Ds_to_obs_final(distancias_teoricas[j],rd,i)
+                    output_th[j] = Ds_to_obs_final(theoretical_distances[j],rd,i)
             #Chi square calculation for each datatype (i)
-            chies_BAO[i] = chi2_sin_cov(output_th,valores_data,errores_data_cuad)
+            chies_BAO[i] = chi2_sin_cov(output_th,data_values,data_squared_errors)
 
 
         if np.isnan(sum(chies_BAO))==True:
@@ -198,19 +203,63 @@ def params_to_chi2(theta, fixed_params, index=0,
             print(omega_m,H_0,rd)
 
         chi2_BAO = np.sum(chies_BAO)
+    
+    if dataset_BAO_full != None:
+        (set_1, set_2) = dataset_BAO_full
+
+        rd = bao_param
+
+        #wb = bao_param
+        #rd = r_drag(Omega_m_LCDM, H_0, wb) #rd calculation
+
+        z_data_BAO, data_values, data_squared_errors, index = set_1
+        chies_BAO_full_1 = np.zeros(len(z_data_BAO))
+        for i in range(len(chies_BAO_full_1)): # For each datatype
+            theoretical_distances = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_data_BAO[i], index[i])
+            output_th = Ds_to_obs_final(theoretical_distances, bao_param, index[i])
+            #Chi square calculation for each datatype (i)
+            chies_BAO_full_1[i] = chi2_sin_cov(output_th, data_values, data_squared_errors)
+        
+
+        z_eff_2, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = set_2
+        chies_BAO_full_2 = np.zeros(len(z_eff_2))
+        for j in range(len(chies_BAO_full_2)): # For each datatype
+            aux = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_eff_2[j], 1)
+            dh_th = Ds_to_obs_final(aux, rd, 1) # dh/rd
+
+            aux = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_eff_2[j], 2)
+            dm_th = Ds_to_obs_final(aux, rd, 2) # dm/rd
+
+            delta_dh = dh_th - data_dh_rd[j]
+            delta_dm = dm_th - data_dm_rd[j]
+            Cov_mat = np.array([[errors_dh_rd[j]**2, errors_dh_rd[j]*errors_dm_rd[j]*rho[j]],\
+                                [errors_dh_rd[j]*errors_dm_rd[j]*rho[j], errors_dm_rd[j]**2]])
+            C_inv = np.linalg.inv(Cov_mat)
+
+            delta = np.array([delta_dh, delta_dm]) #row vector
+            transp = np.transpose(delta) #column vector
+            aux_chi = np.dot(C_inv, transp) #column vector
+            chies_BAO_full_2[j] = np.dot(delta, aux_chi) #scalar    
+        
+        chi2_BAO_full = np.sum(chies_BAO_full_1) + np.sum(chies_BAO_full_2)
+
 
     if dataset_DESI != None:
     
         #elif index == 31:
         #    wb_fid = bao_param
-        #    rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
+        #    rd = r_drag(Omega_m_LCDM, H_0, wb_fid) #rd calculation
         #elif index == 21:
         #    wb_fid = 0.0224 #OJO ACA
-        #    rd = r_drag(omega_m, H_0, wb_fid) #rd calculation
+        #    rd = r_drag(Omega_m_LCDM, H_0, wb_fid) #rd calculation
         #else:
         #    raise ValueError('Introduce a valid index for DESI!')
         
         rd = bao_param #if we want to use wb instead of rd, we need to change this line wirh the commented ones above       
+
+        #wb_fid = bao_param
+        #rd = r_drag(Omega_m_LCDM, H_0, wb_fid) #rd calculation
+
         (set_1, set_2) = dataset_DESI
         z_eff_1, data_dm_rd, errors_dm_rd, data_dh_rd, errors_dh_rd, rho = set_1 
         z_eff_2, data_dv_rd, errors_dv_rd = set_2
@@ -224,10 +273,10 @@ def params_to_chi2(theta, fixed_params, index=0,
 
         for j in range(len(chi2_dm_dh)): # For each datatype
 
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 1)
+            aux = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_eff_1[j], 1)
             dh_th = Ds_to_obs_final(aux, rd, 1) # dh/rd
 
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_1[j], 2)
+            aux = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_eff_1[j], 2)
             dm_th = Ds_to_obs_final(aux, rd, 2) # dm/rd
 
             delta_dh = dh_th - data_dh_rd[j]
@@ -246,7 +295,7 @@ def params_to_chi2(theta, fixed_params, index=0,
         #DV
         dv_th_rd = np.zeros(len(z_eff_2))
         for j in range(len(dv_th_rd)): # For each datatype
-            aux = Hs_to_Ds(Hs_interpolado, int_inv_Hs_interpol, z_eff_2[j], 3)
+            aux = Hs_to_Ds(Hs_interp, int_inv_Hs_interp, z_eff_2[j], 3)
             dv_th_rd[j] = Ds_to_obs_final(aux, rd, 3) # dv/rd
 
         #Chi square calculation for each datatype (i)
@@ -273,7 +322,7 @@ def params_to_chi2(theta, fixed_params, index=0,
             gamma = 0.648
             egamma = 0.007
 
-        DlH0_teo = zs_2_logDlH0(int_inv_Hs_interpol(z_data)*H_0,z_data)
+        DlH0_teo = zs_2_logDlH0(int_inv_Hs_interp(z_data)*H_0,z_data)
         DlH0_obs =  np.log10(3.24) - 25 + (logFx - gamma * logFuv - beta) / (2*gamma - 2)
 
         df_dgamma =  (-logFx+beta+logFuv) / (2*(gamma-1)**2)
@@ -285,7 +334,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
     #print(chi2_SN + chi2_CC)
-    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_H0
+    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_BAO_full + chi2_H0
 
 def log_likelihood(*args, **kargs):  
     '''
@@ -301,7 +350,7 @@ if __name__ == '__main__':
     os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
     from data import read_data_pantheon_plus_shoes, read_data_pantheon_plus, \
                      read_data_pantheon, read_data_chronometers, read_data_BAO, \
-                     read_data_AGN, read_data_DESI
+                     read_data_AGN, read_data_DESI, read_data_BAO_full
     
     # Pantheon plus + SH0ES
     os.chdir(path_git+'/fr_mcmc/source/Pantheon_plus_shoes')
@@ -330,6 +379,10 @@ if __name__ == '__main__':
         aux = read_data_BAO(files_BAO[i])
         ds_BAO.append(aux)
 
+    # BAO full
+    os.chdir(path_git+'/fr_mcmc/source/BAO_full/')
+    ds_BAO_full = read_data_BAO_full('BAO_full_1.csv','BAO_full_2.csv')
+
     # DESI
     os.chdir(path_git+'/fr_mcmc/source/DESI/')
     ds_DESI = read_data_DESI('DESI_data_dm_dh.txt','DESI_data_dv.txt')
@@ -339,24 +392,26 @@ if __name__ == '__main__':
     ds_AGN = read_data_AGN('table3.dat')
 
     #%%
-    chi2_beta = params_to_chi2([-19.37, 140, 0.9, 1.1, 70], _, index=5,
+    chi2_beta = params_to_chi2([-19.37, 140, 0.9, 1.1, 70], 0, index=5,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
                     dataset_SN_plus = ds_SN_plus,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
                     dataset_BAO = ds_BAO,
+                    dataset_BAO_full = ds_BAO_full,
                     #dataset_AGN = ds_AGN,
                     dataset_DESI = ds_DESI,
                     H0_Riess = True,
                     model = 'BETA'
                     )
 
-    chi2_lcdm = params_to_chi2([-19.37, 140, 0.143, 70], _, index=4,
+    chi2_lcdm = params_to_chi2([-19.37, 140, 0.143, 70], 0, index=4,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
                     dataset_SN_plus = ds_SN_plus,
                     dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
                     dataset_BAO = ds_BAO,
+                    dataset_BAO_full = ds_BAO_full,
                     #dataset_AGN = ds_AGN,
                     dataset_DESI = ds_DESI,
                     H0_Riess = True,

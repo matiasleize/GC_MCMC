@@ -173,6 +173,20 @@ def read_data_DESI(file_DESI_1, file_DESI_2):
     return [set_1, set_2]
 
 
+def read_data_BAO_full(file_BAO_full_1, file_BAO_full_2):
+    # Read text with data
+    df_1 = pd.read_csv(file_BAO_full_1)
+    df_2 = pd.read_csv(file_BAO_full_2)
+
+    total_squared_errors_1 = df_1['Stat_error']**2 + df_1['Sist_error']**2
+
+    # Set data
+    set_1 = df_1['z'] , df_1['Dist'], total_squared_errors_1, df_1['index']
+    set_2 = df_2['z_eff'], df_2['Dm_rd'], df_2['error_Dm_rd'], df_2['Dh_rd'], df_2['error_Dh_rd'], df_2['rho']
+
+    return [set_1, set_2]
+
+
 def read_data_AGN(file_AGN):
     z, Fuv, eFuv, Fx, eFx = np.loadtxt(file_AGN,
     usecols=(3,4,5,6,7), unpack=True)
@@ -223,6 +237,11 @@ if __name__ == '__main__':
     file_BAO='BAO_data_da.txt'
     z, data_values, total_errors_cuad = read_data_BAO(file_BAO)
     
+    #%% BAO full
+    os.chdir(path_git+'/fr_mcmc/source/BAO_full/')
+    ds_BAO_full = read_data_BAO_full('BAO_full_1.csv','BAO_full_2.csv')
+    print(ds_BAO_full)
+
     #%%
     os.chdir(path_git+'/fr_mcmc/source/BAO')
     file_BAO='BAO_data.txt'

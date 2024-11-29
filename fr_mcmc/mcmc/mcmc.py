@@ -25,7 +25,7 @@ os.sys.path.extend([
 from utils.sampling import MCMC_sampler
 from utils.data import (
     read_data_pantheon_plus_shoes, read_data_pantheon_plus, read_data_pantheon,
-    read_data_chronometers, read_data_BAO, read_data_DESI, read_data_AGN
+    read_data_chronometers, read_data_BAO, read_data_DESI, read_data_BAO_full, read_data_AGN
 )
 from utils.chi_square import log_likelihood
 from utils.derived_parameters import derived_parameters
@@ -57,7 +57,7 @@ def run():
         [H0_min, H0_max] = config.H0_PRIOR
 
 
-    if config.USE_BAO or config.USE_DESI:
+    if config.USE_BAO or config.USE_DESI or config.USE_BAO_FULL:
         [bao_param_min, bao_param_max] = config.BAO_PARAM_PRIOR
 
     if config.USE_SN or config.USE_PPLUS or config.USE_PPLUS_SHOES:
@@ -120,7 +120,6 @@ def run():
     else:
         ds_BAO = None
 
-
     # DESI
     if config.USE_DESI == True:    
         os.chdir(os.path.join(path_data, 'DESI'))
@@ -129,6 +128,14 @@ def run():
         datasets.append('_DESI')
     else:
         ds_DESI = None
+
+    # BAO full
+    if config.USE_BAO_FULL == True:    
+        os.chdir(os.path.join(path_data, 'BAO_full'))
+        ds_BAO_full = read_data_BAO_full('BAO_full_1.csv','BAO_full_2.csv')
+        datasets.append('_BAO_full')
+    else:
+        ds_BAO_full = None
 
     # AGN
     if config.USE_AGN == True:
@@ -156,6 +163,7 @@ def run():
                                         dataset_CC = ds_CC,
                                         dataset_BAO = ds_BAO,
                                         dataset_DESI = ds_DESI,
+                                        dataset_BAO_full = ds_BAO_full,
                                         dataset_AGN = ds_AGN,
                                         H0_Riess = H0_Riess,
                                         model = model,
