@@ -14,7 +14,7 @@ import git
 
 # Get the root directory of the Git repository
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
-path_datos_global = os.path.dirname(path_git)
+path_global = os.path.dirname(path_git)
 
 # Add necessary paths to sys.path
 os.sys.path.extend([
@@ -111,10 +111,10 @@ def run():
         os.chdir(os.path.join(path_data, 'BAO'))
 
         ds_BAO = []
-        archivos_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
+        files_BAO = ['BAO_data_da.txt','BAO_data_dh.txt','BAO_data_dm.txt',
                         'BAO_data_dv.txt','BAO_data_H.txt']
         for i in range(5):
-            aux = read_data_BAO(archivos_BAO[i])
+            aux = read_data_BAO(files_BAO[i])
             ds_BAO.append(aux)
         datasets.append('_BAO')
     else:
@@ -224,8 +224,8 @@ def run():
 
     filename = f'sample_{model}{datasets}_{num_params}params'
 
-    #output_directory = os.path.join(path_datos_global, output_dir, filename) #No se porque no anda..
-    output_directory = path_datos_global + output_dir + filename
+    #output_directory = os.path.join(path_global, output_dir, filename) #No se porque no anda..
+    output_directory = path_global + output_dir + filename
 
     if not os.path.exists(output_directory):
         os.mkdir(output_directory)
@@ -251,7 +251,7 @@ def run():
     print(f'Maximun likelihood corresponds to the parameters: {sol}')
 
     # Define initial values of each chain using the minimun 
-    # values of the chi square.
+    # values of the chi-squared.
     pos = sol * (1 +  0.01 * np.random.randn(config.NUM_WALKERS, num_params))
     filename_h5 = filename + '.h5'
 
