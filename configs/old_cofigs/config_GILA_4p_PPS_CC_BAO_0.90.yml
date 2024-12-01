@@ -18,20 +18,18 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 
 #For now only flat priors
 M_PRIOR: [-21, -18]
-L_BAR_PRIOR: [0.5, 1.5]
-B_PRIOR: [0, 15] #Only read if MODEL is 'HS' or 'EXP'
+BAO_PARAM_PRIOR: [120, 160]
+L_BAR_PRIOR: [_, _]
+B_PRIOR: [0, 100] #Only read if MODEL is 'BETA' or 'GILA'
 H0_PRIOR: [60, 80]
-OMEGA_M_PRIOR: [-35000,10]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 10, 70, 1.6]
-BOUNDS: [[-21, -18], [0, 15], [55, 80], [-35000,10]]
-
-ALL_ANALYTIC: False #Use Basilakos et al. approximation for all parameters combination.
+GUEST: [-19.352, 140, 1, 70]
+BOUNDS: [[-21, -18], [130,150], [0, 100], [60, 80]]
 
 #Directory in which output files are stored
-OUTPUT_DIR: '/GILA-output/L=0.90/'
+OUTPUT_DIR: '/GILA-output/L=0.90/gila_model/'
 
 #Other things that are not in use:
 #DATA_PATH: './data'
