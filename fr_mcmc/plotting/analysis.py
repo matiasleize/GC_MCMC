@@ -42,6 +42,8 @@ def parameters_labels(index, model):
             return ['$M_{abs}$', r'$\beta$', '$H_{0}$']
         elif index == 32:
             return ['$r_{d}$', r'$\beta$', '$H_{0}$']
+        elif index == 2:
+            return [r'$\beta$', '$H_{0}$']
 
 def run(filename):
     model = config.MODEL

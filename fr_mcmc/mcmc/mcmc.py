@@ -213,6 +213,10 @@ def run():
                 bao_param, b, H0 = theta
                 if (bao_param_min < bao_param < bao_param_max and b_min < b < b_max and H0_min < H0 < H0_max):
                     return 0.0
+            elif index == 2:
+                b, H0 = theta
+                if (b_min < b < b_max and H0_min < H0 < H0_max):
+                    return 0.0
         return -np.inf
     
     # Define the posterior distribution

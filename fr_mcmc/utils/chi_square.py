@@ -5,6 +5,7 @@ the parameters of the model and the datasets which are use.
 
 import numpy as np
 from scipy.interpolate import interp1d
+from scipy.integrate import simps as simps
 from scipy.integrate import cumtrapz as cumtrapz
 from scipy.constants import c as c_light #meters/seconds
 c_light_km = c_light/1000
@@ -80,6 +81,9 @@ def all_parameters(theta, fixed_params, model, index):
         elif index == 32:
             [bao_param, b, H_0] = theta
             Mabs, L_bar = fixed_params
+        elif index == 2:
+            [b, H_0] = theta
+            Mabs, bao_param, L_bar = fixed_params
         else:
             raise ValueError('Introduce a valid index for BETA or GILA!')
         return [Mabs, bao_param, L_bar, b, H_0]
@@ -88,7 +92,7 @@ def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
                    dataset_SN=None, dataset_CC=None,
                    dataset_BAO=None, dataset_DESI=None, dataset_BAO_full=None,
-                   dataset_AGN=None, H0_Riess=False,
+                   dataset_AGN=None, H0_Riess=False, aou=True,
                    num_z_points=int(10**5), model='LCDM',n=1,
                    nuisance_2 = False, enlarged_errors=False,
                    all_analytic=False):
@@ -320,8 +324,16 @@ def params_to_chi2(theta, fixed_params, index=0,
 
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
+    
+    chi2_aou = 0
+    if aou == True:
+        Gyr_to_second = int(3.1536e16)
+        Mpc_to_km = int(3.0857e19)
+        inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
+        aou_beta = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
+        chi2_aou = ((aou_beta - 13.3)/0.6)**2
 
-    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_BAO_full + chi2_H0
+    return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_BAO_full + chi2_H0 + chi2_aou
 
 def log_likelihood(*args, **kargs):  
     '''
@@ -386,47 +398,47 @@ if __name__ == '__main__':
     chi2_beta = symbols('chi2_BETA')
     chi2_gila = symbols('chi2_GILA')
 
-    chi2_lcdm_value = params_to_chi2([-19.37, 140, 0.143, 70], 0, index=4,
+    chi2_lcdm_value = params_to_chi2([-19.37, 140, 0.163, 72.188], 0, index=4,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
-                    dataset_SN_plus = ds_SN_plus,
-                    dataset_SN = ds_SN,
+                    #dataset_SN_plus = ds_SN_plus,
+                    #dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
-                    dataset_BAO_full = ds_BAO_full,
+                    #dataset_BAO = ds_BAO,
+                    #dataset_BAO_full = ds_BAO_full,
                     #dataset_AGN = ds_AGN,
-                    dataset_DESI = ds_DESI,
+                    #dataset_DESI = ds_DESI,
                     H0_Riess = True,
                     model = 'LCDM'
                     )
 
     print(r'$\chi_{\rm \Lambda CDM}^{2}$:', chi2_lcdm_value)
 
-    chi2_gila_value = params_to_chi2([-19.37, 140, 0.9, 1.1, 70], 0, index=5,
+    chi2_gila_value = params_to_chi2([-19.37, 140, 0.9, 2, 72.188], 0, index=5,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
-                    dataset_SN_plus = ds_SN_plus,
-                    dataset_SN = ds_SN,
+                    #dataset_SN_plus = ds_SN_plus,
+                    #dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
-                    dataset_BAO_full = ds_BAO_full,
+                    #dataset_BAO = ds_BAO,
+                    #dataset_BAO_full = ds_BAO_full,
                     #dataset_AGN = ds_AGN,
-                    dataset_DESI = ds_DESI,
+                    #dataset_DESI = ds_DESI,
                     H0_Riess = True,
                     model = 'GILA'
                     )
 
     print(r'$\chi_{\rm GILA}^{2}$:', chi2_gila_value)
 
-    chi2_beta_value = params_to_chi2([-19.37, 140, 0.9, 1.1, 70], 0, index=5,
+    chi2_beta_value = params_to_chi2([-19.37, 140, 0.9, 2, 72.188], 0, index=5,
                     dataset_SN_plus_shoes = ds_SN_plus_shoes,
-                    dataset_SN_plus = ds_SN_plus,
-                    dataset_SN = ds_SN,
+                    #dataset_SN_plus = ds_SN_plus,
+                    #dataset_SN = ds_SN,
                     dataset_CC = ds_CC,
-                    dataset_BAO = ds_BAO,
-                    dataset_BAO_full = ds_BAO_full,
+                    #dataset_BAO = ds_BAO,
+                    #dataset_BAO_full = ds_BAO_full,
                     #dataset_AGN = ds_AGN,
-                    dataset_DESI = ds_DESI,
+                    #dataset_DESI = ds_DESI,
                     H0_Riess = True,
                     model = 'BETA'
                     )
 
-    print(r'$\chi_{\rm BETA}^{2}$:', chi2_BETA_value)
+    print(r'$\chi_{\rm BETA}^{2}$:', chi2_beta_value)
