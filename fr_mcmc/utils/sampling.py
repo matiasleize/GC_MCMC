@@ -84,7 +84,7 @@ def MCMC_sampler(log_probability, initial_values,
 		converged &= np.all((np.abs(old_tau - tau) / tau) < tolerance)
 		if converged:
 			textfile_witness = open(witness_file,'a')
-			textfile_witness.write('\n Convergió!')
+			textfile_witness.write('\n Converged!')
 			textfile_witness.close()
 			break
 		old_tau = tau
