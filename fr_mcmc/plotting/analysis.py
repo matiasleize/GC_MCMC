@@ -29,7 +29,7 @@ def parameters_labels(index, model):
         elif index == 32:
             return ['$r_{d}$', r'$\omega_m$', '$H_{0}$']
 
-    elif (model == 'GILA' or model == 'GILA'):
+    elif (model == 'BETA' or model == 'GILA'):
         if index == 5:
             return ['$M_{abs}$', '$r_{d}$', '$\L$', r'$\beta$', '$H_{0}$']
         elif index == 41:
