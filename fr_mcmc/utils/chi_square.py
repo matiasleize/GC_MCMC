@@ -143,13 +143,22 @@ def params_to_chi2(theta, fixed_params, index=0,
         omega_m = F_H0 /(100**2) - OMEGA_R_0
         h = H_0/100
         Omega_m_LCDM = omega_m / h**2 
-        Omega_m_luisa = omega_CDM_to_luisa(b, L_bar, H_0, Omega_m_LCDM, model=model)
+        #Omega_m_luisa = omega_CDM_to_luisa(b, L_bar, H_0, Omega_m_LCDM, model=model)
 
         physical_params = [L_bar, b, H_0]
+        
         try:
             zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
                                         z_min=0, z_max=10, num_z_points=num_z_points,
                                         all_analytic=all_analytic)
+            #CAREFUL CONSTRAIN OF THE AGE OF THE UNIVERSE
+            Gyr_to_second = int(3.1536e16)
+            Mpc_to_km = int(3.0857e19)
+            inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
+            aou_gila = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
+            if aou_gila < 12.7:
+                return -np.inf
+        
         except Exception as e:
             # If integration fails, reject the step
             return -np.inf
