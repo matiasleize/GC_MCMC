@@ -11,57 +11,27 @@ os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 from constants import LAMBDA, L
 
 #GILA model
-def F_H(H, params, model):     
+def F_H(H, params, model ,s=8):     
     lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
     if model == 'GILA':
-        FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**16) \
+        FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**(2*s)) \
                   + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**2)
     elif model == 'BETA':
-        FH = H**2 - H**2        * beta * np.exp(-beta*(L_bar*H)**16) \
-                  + H**8 * L**6 * lamb * np.exp(lamb*(L*H)**4)
-
+        FH = H**2 - H**2            * beta * np.exp(-beta*(L_bar*H)**(2*s)) \
+                  + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**4)
     return FH
 
-def F_H_prime(H, params, model):
+def F_H_prime(H, params, model ,s=8):
     lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
-
-    if model == 'GILA':
-        aux = np.exp(-beta*(L_bar*H)**16) * beta * (L_bar*H)**4 * (-3 + 8 * beta * (L_bar*H)**16) +\
-              np.exp(lamb*(L*H)**2)       * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
-    if model == 'BETA':
-        aux =     np.exp(-beta*(L_bar*H)**16) * beta             * (-1 + 8 * beta * (L_bar*H)**16) +\
-              2 * np.exp(lamb*(L*H)**4)      * lamb * (L*H)**6  * (2 + lamb*(L*H)**4)
+        if model == 'GILA':
+            aux = np.exp(-beta*(L_bar*H)**(2*s))     * beta * (L_bar*H)**4 * (-3 + s * beta * (L_bar*H)**(2*s)) +\
+                  np.exp(lamb*(L*H)**2)              * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
+        if model == 'BETA':
+            aux =     np.exp(-beta*(L_bar*H)**(2*s)) * beta                * (-1 + s * beta * (L_bar*H)**(2*s)) +\
+                  2 * np.exp(lamb*(L*H)**4)          * lamb * (L*H)**6     * (2 + lamb*(L*H)**4)
 
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
-
-
-'''
-#GILA model
-def F_H(H, params, model):     
-    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
-    if model == 'GILA':
-        FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**10) \
-                  + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**2)
-    elif model == 'BETA':
-        FH = H**2 - H**2        * beta * np.exp(-beta*(L_bar*H)**8) \
-                  + H**8 * L**6 * lamb * np.exp(lamb*(L*H)**4)
-
-    return FH
-
-def F_H_prime(H, params, model):
-    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
-
-    if model == 'GILA':
-        aux = np.exp(-beta*(L_bar*H)**10) * beta * (L_bar*H)**4 * (-3 + 5 * beta * (L_bar*H)**10) +\
-              np.exp(lamb*(L*H)**2)       * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
-    if model == 'BETA':
-        aux =     np.exp(-beta*(L_bar*H)**8) * beta             * (-1 + 4 * beta * (L_bar*H)**8) +\
-              2 * np.exp(lamb*(L*H)**4)      * lamb * (L*H)**6  * (2 + lamb*(L*H)**4)
-
-    FH_prime = 2 * H * (1 + aux) 
-    return FH_prime
-'''
 
 def omega_luisa_to_CDM(beta, L_bar, H0, Omega_m_luisa, model):
     factor = F_H(H0, [LAMBDA, L/H0, beta, L_bar/H0], model) / H0**2
