@@ -23,12 +23,12 @@ def F_H(H, params, model ,s=8):
 
 def F_H_prime(H, params, model ,s=8):
     lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
-        if model == 'GILA':
-            aux = np.exp(-beta*(L_bar*H)**(2*s))     * beta * (L_bar*H)**4 * (-3 + s * beta * (L_bar*H)**(2*s)) +\
-                  np.exp(lamb*(L*H)**2)              * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
-        if model == 'BETA':
-            aux =     np.exp(-beta*(L_bar*H)**(2*s)) * beta                * (-1 + s * beta * (L_bar*H)**(2*s)) +\
-                  2 * np.exp(lamb*(L*H)**4)          * lamb * (L*H)**6     * (2 + lamb*(L*H)**4)
+    if model == 'GILA':
+        aux = np.exp(-beta*(L_bar*H)**(2*s))     * beta * (L_bar*H)**4 * (-3 + s * beta * (L_bar*H)**(2*s)) +\
+              np.exp(lamb*(L*H)**2)              * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
+    if model == 'BETA':
+        aux =     np.exp(-beta*(L_bar*H)**(2*s)) * beta                * (-1 + s * beta * (L_bar*H)**(2*s)) +\
+              2 * np.exp(lamb*(L*H)**4)          * lamb * (L*H)**6     * (2 + lamb*(L*H)**4)
 
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
