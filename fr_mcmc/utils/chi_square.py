@@ -92,7 +92,7 @@ def params_to_chi2(theta, fixed_params, index=0,
                    dataset_SN_plus_shoes=None, dataset_SN_plus=None,
                    dataset_SN=None, dataset_CC=None,
                    dataset_BAO=None, dataset_DESI=None, dataset_BAO_full=None,
-                   dataset_AGN=None, H0_Riess=False, #aou=False
+                   dataset_AGN=None, H0_Riess=False, aou=True,
                    num_z_points=int(10**5), model='LCDM',n=1,
                    nuisance_2 = False, enlarged_errors=False,
                    all_analytic=False):
@@ -152,12 +152,12 @@ def params_to_chi2(theta, fixed_params, index=0,
                                         z_min=0, z_max=10, num_z_points=num_z_points,
                                         all_analytic=all_analytic)
             #CAREFUL CONSTRAIN OF THE AGE OF THE UNIVERSE
-            Gyr_to_second = int(3.1536e16)
-            Mpc_to_km = int(3.0857e19)
-            inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
-            aou_gila = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
-            if aou_gila < 12.7:
-                return -np.inf
+            #Gyr_to_second = int(3.1536e16)
+            #Mpc_to_km = int(3.0857e19)
+            #inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
+            #aou_gila = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
+            #if aou_gila < 12.7:
+            #    return -np.inf
         
         except Exception as e:
             # If integration fails, reject the step
@@ -336,14 +336,14 @@ def params_to_chi2(theta, fixed_params, index=0,
 
 
     chi2_aou = 0
-    '''
-    if aou == True:
-        Gyr_to_second = int(3.1536e16)
-        Mpc_to_km = int(3.0857e19)
-        inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
-        aou_beta = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
-        chi2_aou = ((aou_beta - 13.3)/0.6)**2
-    '''
+    
+    #if aou == True:
+    #    Gyr_to_second = int(3.1536e16)
+    #    Mpc_to_km = int(3.0857e19)
+    #    inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
+    #    aou_beta = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
+    #    chi2_aou = ((aou_beta - 13.3)/0.6)**2
+    
 
     return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_BAO_full + chi2_H0 + chi2_aou
 
