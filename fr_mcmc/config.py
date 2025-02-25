@@ -16,15 +16,15 @@ os.chdir(path_git + '/configs/')
 ##yml_file = 'config_LCDM_3p_PPS_CC.yml'
 
 #yml_file = 'config_BETA_3p_PPS_CC_0.89.yml'
-yml_file = 'config_BETA_3p_PPS_CC_0.90.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_0.90.yml'
 #yml_file = 'config_BETA_3p_PPS_CC_0.91.yml'
 
 #yml_file = 'config_GILA_3p_PPS_CC_0.89.yml'
 #yml_file = 'config_GILA_3p_PPS_CC_0.90.yml'
 #yml_file = 'config_GILA_3p_PPS_CC_0.91.yml'
 
-#yml_file = 'config_BETA_3p_CC_0.90.yml'
-#yml_file = 'config_GILA_3p_CC_0.90.yml'
+#yml_file = 'config_BETA_3p_PPS_CC_0.90_short_prior.yml'
+yml_file = 'config_GILA_3p_PPS_CC_0.90_short_prior.yml'
 
 #################################################
 ##yml_file = 'config_LCDM_3p_PPS_CC.yml'
