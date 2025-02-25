@@ -10,25 +10,31 @@ path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 from constants import LAMBDA, L
 
-#GILA model
-def F_H(H, params, model ,s=8):     
+def F_H(H, params, model):     
     lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
     if model == 'GILA':
-        FH = H**2 - H**6 * L_bar**4 * beta * np.exp(-beta*(L_bar*H)**(2*s)) \
-                  + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**2)
+        r = 3, s = 1, p = _, q = _
+        lamb = 0
     elif model == 'BETA':
-        FH = H**2 - H**2            * beta * np.exp(-beta*(L_bar*H)**(2*s)) \
-                  + H**8 * L**6     * lamb * np.exp(lamb*(L*H)**4)
+        r = 1, s = 2, p = _, q = _
+        lamb = 0
+
+    FH = H**2 - beta * H**(2*r) * L_bar**(2*(r-1)) * np.exp(-beta*(L_bar*H)**(2*s)) \
+              + lamb * H**(2*p) * L**(2*(p-1))     * np.exp(lamb*(L*H)**(2*q))
+
     return FH
 
-def F_H_prime(H, params, model ,s=8):
+def F_H_prime(H, params, model):
     lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
     if model == 'GILA':
-        aux = np.exp(-beta*(L_bar*H)**(2*s))     * beta * (L_bar*H)**4 * (-3 + s * beta * (L_bar*H)**(2*s)) +\
-              np.exp(lamb*(L*H)**2)              * lamb * (L*H)**6     * (4 + lamb*(L*H)**2)
-    if model == 'BETA':
-        aux =     np.exp(-beta*(L_bar*H)**(2*s)) * beta                * (-1 + s * beta * (L_bar*H)**(2*s)) +\
-              2 * np.exp(lamb*(L*H)**4)          * lamb * (L*H)**6     * (2 + lamb*(L*H)**4)
+        r = 3, s = 1, p = _, q = _
+        lamb = 0
+    elif model == 'BETA':
+        r = 1, s = 2, p = _, q = _
+        lamb = 0
+    
+    aux = beta * np.exp(-beta*(L_bar*H)**(2*s)) * (L_bar*H)**(2*(r-1)) * (-r + s * beta * (L_bar*H)**2) +\
+          lamb * np.exp(lamb*(L*H)**(2*q))      * (L*H)**(2*(p-1))     * (p  + q * lamb * (L*H)**2)
 
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
