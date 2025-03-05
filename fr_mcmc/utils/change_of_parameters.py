@@ -10,31 +10,42 @@ path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 os.chdir(path_git); os.sys.path.append('./fr_mcmc/utils/')
 from constants import LAMBDA, L
 
-def F_H(H, params, model):     
-    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
-    if model == 'GILA':
-        r = 3, s = 1, p = _, q = _
-        lamb = 0
-    elif model == 'BETA':
-        r = 1, s = 2, p = _, q = _
-        lamb = 0
 
-    FH = H**2 - beta * H**(2*r) * L_bar**(2*(r-1)) * np.exp(-beta*(L_bar*H)**(2*s)) \
-              + lamb * H**(2*p) * L**(2*(p-1))     * np.exp(lamb*(L*H)**(2*q))
+def F_H(H, params, model):     
+    lamb, L, beta, L_bar, r, s = params # L and L_bar have to be in units of H0^{-1}
+    #Fixed exponents
+    r = 1
+    s = 2
+    ################
+    if model == 'GILA':
+        lamb = 0; p = 3; q = 1
+        FH = H**2 - beta * H**(2*r) * L_bar**(2*(r-1)) * np.exp(-beta*(L_bar*H)**(2*s)) #\
+                  #+ lamb * H**(2*p) * L**(2*(p-1))     * np.exp(lamb*(L*H)**(2*q))
+
+    elif model == 'BETA':
+        lamb = 0; p = 1; q = 2; r = 1
+        FH = H**2 - beta * H**2                        * np.exp(-beta*(L_bar*H)**(2*s)) #\
+                  #+ lamb * H**(2*p) * L**(2*(p-1))     * np.exp(lamb*(L*H)**(2*q))
 
     return FH
 
+
 def F_H_prime(H, params, model):
-    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
+    #Fixed exponents
+    r = 1
+    s = 2
+    ################
+    lamb, L, beta, L_bar, r, s = params # L and L_bar have to be in units of H0^{-1}
+   
     if model == 'GILA':
-        r = 3, s = 1, p = _, q = _
-        lamb = 0
+        lamb = 0; p = 3; q = 1
+        aux = beta * np.exp(-beta*(L_bar*H)**(2*s)) * (L_bar*H)**(2*(r-1)) * (-r + s * beta * (L_bar*H)**(2*s)) #+\
+              #lamb * np.exp(lamb*(L*H)**(2*q))      * (L*H)**(2*(p-1))     * (p  + q * lamb * (L*H)**(2*q))
+
     elif model == 'BETA':
-        r = 1, s = 2, p = _, q = _
-        lamb = 0
-    
-    aux = beta * np.exp(-beta*(L_bar*H)**(2*s)) * (L_bar*H)**(2*(r-1)) * (-r + s * beta * (L_bar*H)**2) +\
-          lamb * np.exp(lamb*(L*H)**(2*q))      * (L*H)**(2*(p-1))     * (p  + q * lamb * (L*H)**2)
+        lamb = 0; p = 1; q = 2; r = 1
+        aux = beta * np.exp(-beta*(L_bar*H)**(2*s))                        * (-1 + s * beta * (L_bar*H)**(2*s)) #+\
+              #lamb * np.exp(lamb*(L*H)**(2*q))      * (L*H)**(2*(p-1)) * (p  + q * lamb * (L*H)**(2*q))
 
     FH_prime = 2 * H * (1 + aux) 
     return FH_prime
