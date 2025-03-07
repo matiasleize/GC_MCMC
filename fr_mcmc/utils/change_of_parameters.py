@@ -12,11 +12,14 @@ from constants import LAMBDA, L
 
 
 def F_H(H, params, model):     
-    lamb, L, beta, L_bar, r, s = params # L and L_bar have to be in units of H0^{-1}
+
     #Fixed exponents
-    r = 1
-    s = 2
+    r = 3
+    s = 5
     ################
+
+    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
+
     if model == 'GILA':
         lamb = 0; p = 3; q = 1
         FH = H**2 - beta * H**(2*r) * L_bar**(2*(r-1)) * np.exp(-beta*(L_bar*H)**(2*s)) #\
@@ -31,11 +34,13 @@ def F_H(H, params, model):
 
 
 def F_H_prime(H, params, model):
+
     #Fixed exponents
-    r = 1
-    s = 2
+    r = 3
+    s = 5
     ################
-    lamb, L, beta, L_bar, r, s = params # L and L_bar have to be in units of H0^{-1}
+
+    lamb, L, beta, L_bar = params # L and L_bar have to be in units of H0^{-1}
    
     if model == 'GILA':
         lamb = 0; p = 3; q = 1

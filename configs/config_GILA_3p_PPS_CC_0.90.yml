@@ -20,13 +20,13 @@ WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 M_PRIOR: [-21, -18]
 #BAO_PARAM_PRIOR: [120, 160]
 L_BAR_PRIOR: [_, _]
-B_PRIOR: [0.3, 8] #Only read if MODEL is 'BETA' or 'GILA'
+B_PRIOR: [0.1, 12] #Only read if MODEL is 'BETA' or 'GILA'
 H0_PRIOR: [60, 80]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.352, 1, 70]
-BOUNDS: [[-21, -18], [0.3, 8], [60, 80]]
+GUEST: [-19.3, 3.3, 74]
+BOUNDS: [[-19.31, -19.29], [3.2,3.4], [73.9,74.1]]
 
 #Directory in which output files are stored
 OUTPUT_DIR: '/GILA-output/L=0.90/gila_model/'
