@@ -119,7 +119,8 @@ def Hubble_th(physical_params, model, *args,
     
     L_bar, b, H0 = physical_params
 
-    zs, Hs = integrator([L_bar, b, H0], model)  
+    zs, Hs = integrator([L_bar, b, H0], model, *args, initial_z=z_min, final_z=z_max, **kwargs) 
+    #zs, Hs = integrator([L_bar, b, H0], model, initial_z=z_min, final_z=z_max)  
     return zs, Hs   
 
 #%%   
