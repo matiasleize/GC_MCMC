@@ -126,6 +126,7 @@ def params_to_chi2(theta, fixed_params, index=0,
     chi2_BAO_full = 0
     chi2_AGN = 0
     chi2_H0 =  0
+    chi2_aou = 0
 
     if model == 'LCDM':
         [Mabs, bao_param, omega_m, H_0] = all_parameters(theta, fixed_params, model, index)
@@ -146,21 +147,27 @@ def params_to_chi2(theta, fixed_params, index=0,
         #Omega_m_luisa = omega_CDM_to_luisa(b, L_bar, H_0, Omega_m_LCDM, model=model)
 
         physical_params = [L_bar, b, H_0]
-        
+    
+
         try:
-            zs_model, Hs_model = Hubble_th(physical_params, n=n, model=model,
-                                        z_min=0, z_max=10, num_z_points=num_z_points,
-                                        all_analytic=all_analytic)
-            #CAREFUL CONSTRAIN OF THE AGE OF THE UNIVERSE
-            #Gyr_to_second = int(3.1536e16)
-            #Mpc_to_km = int(3.0857e19)
-            #inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
-            #aou_gila = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
-            #if aou_gila < 12.7:
-            #    return -np.inf
+            zs_model, Hs_model = Hubble_th(physical_params, model=model,
+                                        z_min=0, z_max=10, num_z_points=num_z_points)
         
         except Exception as e:
             # If integration fails, reject the step
+            return -np.inf
+
+    #CAREFUL CONSTRAIN OF THE AGE OF THE UNIVERSE
+    if aou == True:
+        Gyr_to_second = int(3.1536e16)
+        Mpc_to_km = int(3.0857e19)
+        inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
+        zs_model_aou, Hs_model_aou = Hubble_th(physical_params, model=model,
+                                        z_min=0, z_max=1000, num_z_points=int(10**5))
+     
+        aou_gila = inv_Hub_to_Gyr * simps(((1+zs_model_aou) * Hs_model_aou)**(-1), zs_model_aou)    
+        #chi2_aou = ((aou - 13.3)/0.6)**2
+        if aou_gila < 12.7:
             return -np.inf
 
     if (dataset_CC != None or dataset_BAO != None or dataset_DESI != None or 
@@ -333,17 +340,6 @@ def params_to_chi2(theta, fixed_params, index=0,
 
     if H0_Riess == True:
         chi2_H0 = ((Hs_model[0]-73.48)/1.66)**2
-
-
-    chi2_aou = 0
-    
-    #if aou == True:
-    #    Gyr_to_second = int(3.1536e16)
-    #    Mpc_to_km = int(3.0857e19)
-    #    inv_Hub_to_Gyr = Mpc_to_km/Gyr_to_second
-    #    aou_beta = inv_Hub_to_Gyr * simps(((1+zs_model) * Hs_model)**(-1), zs_model)    
-    #    chi2_aou = ((aou_beta - 13.3)/0.6)**2
-    
 
     return chi2_SN + chi2_CC + chi2_AGN + chi2_BAO + chi2_DESI + chi2_BAO_full + chi2_H0 + chi2_aou
 
