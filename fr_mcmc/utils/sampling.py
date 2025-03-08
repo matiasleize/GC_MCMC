@@ -4,12 +4,27 @@ Define the function related with the Markov Chain Monter Carlo (MCMC) process.
 
 import numpy as np
 import emcee
+from emcee.moves import StretchMove, DEMove, DESnookerMove, KDEMove, MHMove, WalkMove, GaussianMove
 import time
-
 import os
 import git
 path_git = git.Repo('.', search_parent_directories=True).working_tree_dir
 path_datos_global = os.path.dirname(path_git)
+
+def proposal_function(coords, random):
+	
+	"""
+	Generate new proposed positions for walkers.
+	Proposals are drawn from a normal distribution centered at the current position.
+	"""
+
+	step_size = 0.01  # Standard deviation of proposal distribution
+	noise = random.normal(scale=step_size, size=coords.shape)  # Generate Gaussian noise
+	proposal = coords + noise  # Add noise to current positions
+	factors = np.ones(coords.shape[0])  # Correction factor (1 for symmetric proposals)
+
+	return proposal, factors
+
 
 def MCMC_sampler(log_probability, initial_values,
                 filename = "default.h5",
@@ -47,13 +62,25 @@ def MCMC_sampler(log_probability, initial_values,
 	textfile_witness = open(witness_file,'w+')
 	textfile_witness.close()
 	#%%
-	#Initialize the sampler
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, backend=backend)
-	
+	# First, choose a move:
 
+	## Mix moves
+	#moves = [(DEMove(), 0.4), (DESnookerMove(), 0.3), (KDEMove(), 0.3)] #FIrst mix move
+	#moves = [(StretchMove(), 0.5), (DEMove(), 0.3), (MHMove(np.eye(ndim) * 0.1), 0.2)] #chatgpt
+	
+	## Solo moves
+	#moves = Walkmove() #Walkmove
+	#moves = MHMove(proposal_function) #Metropolis-Hasting algorithm for a general proposal_function
+	#moves = GaussianMove(np.eye(ndim) * 0.1, factor=1) #Gaussian Metropolis algorithm
+
+
+	# Now, initialize the sampler:
 	#sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, backend=backend,
-	#        moves=[(emcee.moves.DEMove(), 0.4), (emcee.moves.DESnookerMove(), 0.3)
-	#        , (emcee.moves.KDEMove(), 0.3)])
+	#        						moves=moves) #sample with some specify move
+
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_probability, backend=backend) #Dafault move
+
+
 
 	# This will be useful to testing convergence
 	old_tau = np.inf
