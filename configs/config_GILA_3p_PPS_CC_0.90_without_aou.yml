@@ -17,16 +17,16 @@ MAX_SAMPLES: 20000 #Maximum number of samples
 WITNESS_FREQ: 1 #Frequency in which witness is refreshed
 
 #For now only flat priors
-M_PRIOR: [-20, -19]
+M_PRIOR: [-21, -18]
 #BAO_PARAM_PRIOR: [120, 160]
 L_BAR_PRIOR: [_, _]
-B_PRIOR: [1, 5.5] #Only read if MODEL is 'BETA' or 'GILA'
-H0_PRIOR: [69, 75]
+B_PRIOR: [0.1, 12] #Only read if MODEL is 'BETA' or 'GILA'
+H0_PRIOR: [60, 80]
 
 #For the mean values if needed:
 #They have to have the same length of the number of free params.
-GUEST: [-19.32, 3, 73]
-BOUNDS: [[-19.33, -19.31], [1.9,4.3], [72.6,73.4]]
+GUEST: [-19.3, 3.3, 74]
+BOUNDS: [[-19.31, -19.29], [3.2,3.4], [73.9,74.1]]
 
 #Directory in which output files are stored
 OUTPUT_DIR: '/GILA-output/L=0.90/gila_model/'
